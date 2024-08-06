@@ -12,13 +12,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $correo = $_POST['correo'];
     $telefono = $_POST['telefono'];
     $id_posicion = $_POST['id_posicion'];
+    $contrasena = isset($_POST['contrasena']) ? $_POST['contrasena'] : '';
 
     if (empty($id_empleado) || empty($nombre) || empty($apellido) || empty($correo) || empty($id_posicion)) {
         die("Todos los campos son requeridos.");
     }
 
-    $sql = 'UPDATE FIDE_EMPLEADOS_TB SET NOMBRE = :nombre, APELLIDO = :apellido, CORREO_ELECTRONICO = :correo, TELEFONO = :telefono, ID_POSICION = :id_posicion WHERE ID_EMPLEADO = :id_empleado';
-    $stid = oci_parse($conn, $sql);
+    if (!empty($contrasena)) {
+        $hashed_contrasena = password_hash($contrasena, PASSWORD_BCRYPT);
+        $sql = 'UPDATE FIDE_EMPLEADOS_TB SET NOMBRE = :nombre, APELLIDO = :apellido, CORREO_ELECTRONICO = :correo, TELEFONO = :telefono, ID_POSICION = :id_posicion, CONTRASENA = :contrasena WHERE ID_EMPLEADO = :id_empleado';
+        $stid = oci_parse($conn, $sql);
+
+        oci_bind_by_name($stid, ':contrasena', $hashed_contrasena);
+    } else {
+        $sql = 'UPDATE FIDE_EMPLEADOS_TB SET NOMBRE = :nombre, APELLIDO = :apellido, CORREO_ELECTRONICO = :correo, TELEFONO = :telefono, ID_POSICION = :id_posicion WHERE ID_EMPLEADO = :id_empleado';
+        $stid = oci_parse($conn, $sql);
+    }
 
     oci_bind_by_name($stid, ':id_empleado', $id_empleado);
     oci_bind_by_name($stid, ':nombre', $nombre);
@@ -29,6 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if (oci_execute($stid)) {
         header('Location: empleados.php?msg=Empleado actualizado con éxito');
+        exit;
     } else {
         $error = oci_error($stid);
         die("Error al actualizar el empleado: " . htmlentities($error['message'], ENT_QUOTES));

@@ -60,6 +60,10 @@
                         <label for="id_posicion">ID Posición</label>
                         <input type="number" id="id_posicion" name="id_posicion" class="form-control">
                     </div>
+                    <div class="form-group">
+                        <label for="contrasena">Contraseña</label>
+                        <input type="password" id="contrasena" name="contrasena" class="form-control" required>
+                    </div>
                     <button type="submit" class="btn" style="background-color: #013e6a; color: white; margin-bottom: 2rem;">Agregar Empleado</button>
                 </form>
             </div>

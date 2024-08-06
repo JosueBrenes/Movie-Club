@@ -2,16 +2,21 @@
 include '../../../includes/database.php';
 
 if (!$conn) {
-    die("Conexión fallida: " . htmlentities(oci_error()['message'], ENT_QUOTES));
+    echo "No se pudo conectar a la base de datos.";
+    exit;
 }
 
-if (!isset($_GET['id_empleado']) || empty($_GET['id_empleado'])) {
+if (!isset($_GET['id']) || empty($_GET['id'])) {
     die("ID del empleado no proporcionado.");
 }
 
-$id_empleado = $_GET['id_empleado'];
+$id_empleado = $_GET['id'];
 
-$sql = 'SELECT * FROM FIDE_EMPLEADOS_TB WHERE ID_EMPLEADO = :id_empleado';
+// Consulta para obtener la información del empleado
+$sql = 'SELECT e.ID_EMPLEADO, e.NOMBRE, e.APELLIDO, e.CORREO_ELECTRONICO, e.TELEFONO, e.ID_POSICION, p.NOMBRE AS NOMBRE_POSICION
+        FROM FIDE_EMPLEADOS_TB e
+        LEFT JOIN FIDE_POSICION_TB p ON e.ID_POSICION = p.ID_POSICION
+        WHERE e.ID_EMPLEADO = :id_empleado';
 $stid = oci_parse($conn, $sql);
 oci_bind_by_name($stid, ':id_empleado', $id_empleado);
 oci_execute($stid);
@@ -68,22 +73,22 @@ oci_close($conn);
             <div class="container mt-5">
                 <h1 style="color: #333">Editar Empleado</h1>
                 <form action="actualizar_empleado.php" method="POST">
-                    <input type="hidden" name="id_empleado" value="<?php echo htmlspecialchars($empleado['ID_EMPLEADO'] ?? '', ENT_QUOTES); ?>">
+                    <input type="hidden" name="id_empleado" value="<?php echo htmlspecialchars($empleado['ID_EMPLEADO'], ENT_QUOTES); ?>">
                     <div class="form-group">
                         <label for="nombre">Nombre</label>
-                        <input type="text" id="nombre" name="nombre" class="form-control" value="<?php echo htmlspecialchars($empleado['NOMBRE'] ?? '', ENT_QUOTES); ?>" required>
+                        <input type="text" id="nombre" name="nombre" class="form-control" value="<?php echo htmlspecialchars($empleado['NOMBRE'], ENT_QUOTES); ?>" required>
                     </div>
                     <div class="form-group">
                         <label for="apellido">Apellido</label>
-                        <input type="text" id="apellido" name="apellido" class="form-control" value="<?php echo htmlspecialchars($empleado['APELLIDO'] ?? '', ENT_QUOTES); ?>" required>
+                        <input type="text" id="apellido" name="apellido" class="form-control" value="<?php echo htmlspecialchars($empleado['APELLIDO'], ENT_QUOTES); ?>" required>
                     </div>
                     <div class="form-group">
                         <label for="correo">Correo Electrónico</label>
-                        <input type="email" id="correo" name="correo" class="form-control" value="<?php echo htmlspecialchars($empleado['CORREO_ELECTRONICO'] ?? '', ENT_QUOTES); ?>" required>
+                        <input type="email" id="correo" name="correo" class="form-control" value="<?php echo htmlspecialchars($empleado['CORREO_ELECTRONICO'], ENT_QUOTES); ?>" required>
                     </div>
                     <div class="form-group">
                         <label for="telefono">Teléfono</label>
-                        <input type="text" id="telefono" name="telefono" class="form-control" value="<?php echo htmlspecialchars($empleado['TELEFONO'] ?? '', ENT_QUOTES); ?>">
+                        <input type="text" id="telefono" name="telefono" class="form-control" value="<?php echo htmlspecialchars($empleado['TELEFONO'], ENT_QUOTES); ?>">
                     </div>
                     <div class="form-group">
                         <label for="id_posicion">Posición</label>
@@ -103,7 +108,11 @@ oci_close($conn);
                             ?>
                         </select>
                     </div>
-                    <button type="submit" class="btn" style="background-color: #013e6a; color: white; margin-bottom: 2rem;">Actualizar Empleado</button>
+                    <div class="form-group">
+                        <label for="contrasena">Contraseña</label>
+                        <input type="password" id="contrasena" name="contrasena" class="form-control" placeholder="Dejar en blanco si no se desea cambiar">
+                    </div>
+                    <button type="submit" class="btn" style="background-color: #013e6a; color: white; margin-bottom: 2rem;">Actualizar</button>
                 </form>
             </div>
         </section>

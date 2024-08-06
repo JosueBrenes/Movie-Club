@@ -43,6 +43,7 @@ if (!oci_execute($stid)) {
       <a href="../views/paginas/boleteria.php">Boletería</a>
       <a href="../views/paginas/dulceria.php">Dulcería</a>
       <a href="../views/paginas/cartelera.php" class="btn-contact" style="background-color: #19a4bf">Cartelera</a>
+      <a href="../views/auth/login.php" class="btn-contact" style="background-color: #19a4bf">Administrar</a>
     </nav>
   </header>
 
