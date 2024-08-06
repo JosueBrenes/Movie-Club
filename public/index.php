@@ -1,22 +1,3 @@
-<?php
-include '../includes/database.php'; 
-
-if (!$conn) {
-    $e = oci_error();
-    echo htmlentities($e['message'], ENT_QUOTES);
-    exit;
-}
-
-$sql = "SELECT * FROM FIDE_PELICULAS_TB";
-$stid = oci_parse($conn, $sql);
-
-if (!oci_execute($stid)) {
-    $e = oci_error($stid);
-    echo htmlentities($e['message'], ENT_QUOTES);
-    exit;
-}
-?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -33,48 +14,83 @@ if (!oci_execute($stid)) {
 </head>
 
 <body>
-
   <header class="navbar">
-      <a href="../../public/index.php" class="text-dark">
-        <h1 class="font-weight-bold">Movie Club</h1>
-      </a>
+    <a href="../../public/index.php" class="text-dark">
+      <h1 class="font-weight-bold">Movie Club</h1>
+    </a>
     <nav class="menu">
-      <a href="../public/index.php">Inicio</a>
-      <a href="../views/paginas/boleteria.php">Boletería</a>
-      <a href="../views/paginas/dulceria.php">Dulcería</a>
-      <a href="../views/paginas/cartelera.php" class="btn-contact" style="background-color: #19a4bf">Cartelera</a>
-      <a href="../views/auth/login.php" class="btn-contact" style="background-color: #19a4bf">Administrar</a>
+      <a href="../../public/index.php">Inicio</a>
+      <a href="../../views/paginas/boleteria.php">Boletería</a>
+      <a href="../../views/paginas/dulceria.php">Dulcería</a>
+      <a href="../../views/paginas/cartelera.php" class="btn-contact" style="background-color: #19a4bf">Cartelera</a>
+      <a href="../../views/admin/dashboard.php" class="btn-contact" style="background-color: #19a4bf">Administrar</a>
     </nav>
   </header>
 
   <div class="hero">
+    <!-- Contenido del hero -->
   </div>
 
-  <div class="container mt-5">
-    <div class="row">
-      <?php
-      while ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS)) {
-        echo '<div class="col-lg-4 col-md-6 mb-4">';
-        echo '<div class="card">';
-        $imagen = isset($row['IMAGEN']) ? $row['IMAGEN'] : '../public/build/img/default.jpg'; 
-        echo '<img src="' . $imagen . '" class="card-img-top" alt="' . htmlspecialchars($row['NOMBRE'], ENT_QUOTES) . '">';
-        echo '<div class="card-body">';
-        echo '<h5 class="card-title">' . htmlspecialchars($row['NOMBRE'], ENT_QUOTES) . '</h5>';
-        echo '<p class="card-text">' . htmlspecialchars($row['DESCRIPCION'], ENT_QUOTES) . '</p>';
-        echo '<a href="#" class="btn btn-primary">Ver más</a>';
-        echo '</div>';
-        echo '</div>';
-        echo '</div>';
-      }
-      ?>
+  <div class="section">
+    <h2 class="text-center section-header">Estrenos</h2>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-3">
+          <div class="card movie-card">
+            <div class="movie-card-container">
+              <img src="../public/build/img/criaturas-asombrosas.jpeg" alt="Película 1">
+              <div class="btn-container">
+                <a href="#" class="btn btn-red btn-block">Ver Horarios</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card movie-card">
+            <div class="movie-card-container">
+              <img src="../public/build/img/deadpool.png" alt="Película 2">
+              <div class="btn-container">
+                <a href="#" class="btn btn-red btn-block">Ver Horarios</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card movie-card">
+            <div class="movie-card-container">
+              <img src="../public/build/img/mi-villano-favorito.jpg" alt="Película 3">
+              <div class="btn-container">
+                <a href="#" class="btn btn-red btn-block">Ver Horarios</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card movie-card">
+            <div class="movie-card-container">
+              <img src="../public/build/img/intensamente.jpg" alt="Película 3">
+              <div class="btn-container">
+                <a href="#" class="btn btn-red btn-block">Ver Horarios</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
+
+  <div class="section text-center">
+    <h2>Contáctanos</h2>
+    <p>Para más información, no dudes en ponerte en contacto con nosotros.</p>
+    <a href="mailto:contacto@movieclub.com" class="btn btn-primary">Enviar Correo</a>
   </div>
 
   <?php include '../views/templates/footer.php'; ?>
 
+  <!-- Scripts de Bootstrap -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 </body>
 </html>
-
-<?php
-oci_close($conn);
-?>
