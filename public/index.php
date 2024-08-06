@@ -23,7 +23,7 @@
       <a href="../../views/paginas/boleteria.php">Boletería</a>
       <a href="../../views/paginas/dulceria.php">Dulcería</a>
       <a href="../../views/paginas/cartelera.php" class="btn-contact" style="background-color: #19a4bf">Cartelera</a>
-      <a href="../../views/admin/dashboard.php" class="btn-contact" style="background-color: #19a4bf">Administrar</a>
+      <a href="../views/auth/login.php" class="btn-contact" style="background-color: #19a4bf">Administrar</a>
     </nav>
   </header>
 
@@ -77,12 +77,6 @@
         </div>
       </div>
     </div>
-  </div>
-
-  <div class="section text-center">
-    <h2>Contáctanos</h2>
-    <p>Para más información, no dudes en ponerte en contacto con nosotros.</p>
-    <a href="mailto:contacto@movieclub.com" class="btn btn-primary">Enviar Correo</a>
   </div>
 
   <?php include '../views/templates/footer.php'; ?>
