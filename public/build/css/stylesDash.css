@@ -1,0 +1,178 @@
+/* Estilos generales para la página */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+
+/* Estilos para el header */
+.header_area {
+  background-color: #010224;
+  color: #ffffff;
+  padding: 20px 0;
+  text-align: center;
+}
+
+.header_area h1 {
+  margin: 0;
+  font-weight: bold;
+}
+
+.header_nav a {
+  color: #ffffff !important;
+  font-weight: bold;
+}
+
+.header_nav a:hover {
+  color: #45a049 !important;
+}
+
+.header_area {
+}
+
+.header_link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.header_link:hover {
+  text-decoration: none;
+  color: #23a6be;
+}
+
+/* Estilos para el footer */
+.footer_area {
+  background-color: #010224;
+  color: #ffffff;
+  padding: 20px 0;
+  text-align: center;
+}
+
+.footer_text {
+  margin: 0;
+}
+
+/* Estilos para el sidebar */
+.sidebar {
+  width: 250px;
+  background-color: #010224;
+  color: #ffffff;
+  padding: 20px;
+  position: fixed;
+  height: 100vh;
+  overflow: auto;
+  text-decoration: none;
+}
+
+.sidebar a {
+  display: block;
+  color: #ffffff;
+  text-decoration: none;
+  padding: 10px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+.sidebar a:hover {
+  background-color: #030441;
+  text-decoration: none;
+}
+
+/* Estilos para el contenido principal */
+.content {
+  margin-left: 250px;
+  padding: 20px;
+  width: calc(100% - 250px);
+}
+
+/* Estilos para tablas */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px auto;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+th,
+td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background-color: #010224;
+  color: white;
+}
+
+tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+/* Estilos para enlaces */
+a {
+  color: #010224;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Estilos para botones */
+.button {
+  display: inline-block;
+  padding: 10px 20px;
+  margin: 20px 0;
+  background-color: #030441;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+}
+
+.button:hover {
+  background-color: #030441;
+  text-decoration: none;
+  color: #fff;
+}
+
+/* Estilos para cards */
+.card {
+  margin-bottom: 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-body {
+  padding: 2rem;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Estilos para botones de tipo light */
+.btn-light {
+  color: #ffffff;
+  border: 1px solid #ffffff;
+}
+
+.btn-light:hover {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+/* Estilos generales para encabezados */
+h1,
+h2 {
+  text-align: center;
+  color: #fff;
+  margin: 20px 0;
+}

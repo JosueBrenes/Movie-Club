@@ -1,0 +1,415 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #ffffff;
+}
+
+.navbar img {
+  height: 50px;
+}
+
+.navbar .menu {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.navbar .menu a {
+  color: black;
+  text-decoration: none;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.navbar .menu a.btn-login,
+.navbar .menu a.btn-contact {
+  padding: 10px 20px;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  background-color: #f2381d !important;
+}
+
+.navbar .menu a.search-icon {
+  position: relative;
+}
+
+.navbar a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.navbar .menu a.search-icon::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 1;
+}
+
+.navbar .menu a.search-icon i {
+  position: relative;
+  z-index: 2;
+  color: #888;
+  font-size: 18px;
+}
+
+.hero {
+  position: relative;
+  height: 52vh;
+  overflow: hidden;
+  background-image: url("../img/hero.jpeg");
+  background-size: cover;
+  background-position: center;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.hero .hero-text {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  color: white;
+  text-align: center;
+}
+
+.hero .hero-text h1 {
+  font-size: 36px;
+  margin: 0;
+}
+
+.hero .hero-text a {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #19a4bf;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+}
+
+/* Estilos para la sección de inicio de sesión */
+.login-section {
+  background-color: #f2f2f2; /* Color de fondo del área de login */
+  padding: 50px 20px;
+  text-align: center;
+  flex: 1; /* Ocupa todo el espacio restante */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-form {
+  max-width: 400px;
+  background-color: #ffffff; /* Fondo blanco para el formulario */
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+}
+
+.login-form h2 {
+  margin-bottom: 20px;
+  text-align: left; /* Alinea el título a la izquierda */
+}
+
+.login-form form {
+  display: flex;
+  flex-direction: column;
+}
+
+.login-form label {
+  margin-bottom: 10px;
+  text-align: left; /* Alinea las etiquetas a la izquierda */
+}
+
+.login-form input[type="text"],
+.login-form input[type="password"] {
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 16px;
+}
+
+.login-form button {
+  padding: 10px 20px;
+  background-color: #19a4bf;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.login-form button:hover {
+  background-color: #13738c;
+}
+
+/* Estilos para el footer */
+body {
+  margin-top: 20px;
+}
+.footer_area {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  webkit-box-shadow: 0 8px 48px 8px rgba(47, 91, 234, 0.175);
+  box-shadow: 0 8px 48px 8px rgba(47, 91, 234, 0.175);
+  padding: 60px;
+}
+.footer_area .row {
+  margin-left: -25px;
+  margin-right: -25px;
+}
+.footer_area .row .col,
+.footer_area .row .col-1,
+.footer_area .row .col-10,
+.footer_area .row .col-11,
+.footer_area .row .col-12,
+.footer_area .row .col-2,
+.footer_area .row .col-3,
+.footer_area .row .col-4,
+.footer_area .row .col-5,
+.footer_area .row .col-6,
+.footer_area .row .col-7,
+.footer_area .row .col-8,
+.footer_area .row .col-9,
+.footer_area .row .col-auto,
+.footer_area .row .col-lg,
+.footer_area .row .col-lg-1,
+.footer_area .row .col-lg-10,
+.footer_area .row .col-lg-11,
+.footer_area .row .col-lg-12,
+.footer_area .row .col-lg-2,
+.footer_area .row .col-lg-3,
+.footer_area .row .col-lg-4,
+.footer_area .row .col-lg-5,
+.footer_area .row .col-lg-6,
+.footer_area .row .col-lg-7,
+.footer_area .row .col-lg-8,
+.footer_area .row .col-lg-9,
+.footer_area .row .col-lg-auto,
+.footer_area .row .col-md,
+.footer_area .row .col-md-1,
+.footer_area .row .col-md-10,
+.footer_area .row .col-md-11,
+.footer_area .row .col-md-12,
+.footer_area .row .col-md-2,
+.footer_area .row .col-md-3,
+.footer_area .row .col-md-4,
+.footer_area .row .col-md-5,
+.footer_area .row .col-md-6,
+.footer_area .row .col-md-7,
+.footer_area .row .col-md-8,
+.footer_area .row .col-md-9,
+.footer_area .row .col-md-auto,
+.footer_area .row .col-sm,
+.footer_area .row .col-sm-1,
+.footer_area .row .col-sm-10,
+.footer_area .row .col-sm-11,
+.footer_area .row .col-sm-12,
+.footer_area .row .col-sm-2,
+.footer_area .row .col-sm-3,
+.footer_area .row .col-sm-4,
+.footer_area .row .col-sm-5,
+.footer_area .row .col-sm-6,
+.footer_area .row .col-sm-7,
+.footer_area .row .col-sm-8,
+.footer_area .row .col-sm-9,
+.footer_area .row .col-sm-auto,
+.footer_area .row .col-xl,
+.footer_area .row .col-xl-1,
+.footer_area .row .col-xl-10,
+.footer_area .row .col-xl-11,
+.footer_area .row .col-xl-12,
+.footer_area .row .col-xl-2,
+.footer_area .row .col-xl-3,
+.footer_area .row .col-xl-4,
+.footer_area .row .col-xl-5,
+.footer_area .row .col-xl-6,
+.footer_area .row .col-xl-7,
+.footer_area .row .col-xl-8,
+.footer_area .row .col-xl-9,
+.footer_area .row .col-xl-auto {
+  padding-right: 25px;
+  padding-left: 25px;
+}
+
+.single-footer-widget {
+  position: relative;
+  z-index: 1;
+}
+.single-footer-widget .copywrite-text a {
+  color: #747794;
+  font-size: 1rem;
+}
+.single-footer-widget .copywrite-text a:hover,
+.single-footer-widget .copywrite-text a:focus {
+  color: #3f43fd;
+}
+.single-footer-widget .widget-title {
+  margin-bottom: 1.5rem;
+}
+.single-footer-widget .footer_menu li a {
+  color: #747794;
+  margin-bottom: 1rem;
+  display: block;
+  font-size: 1rem;
+}
+.single-footer-widget .footer_menu li a:hover,
+.single-footer-widget .footer_menu li a:focus {
+  color: #3f43fd;
+}
+.single-footer-widget .footer_menu li:last-child a {
+  margin-bottom: 0;
+}
+
+.footer_social_area {
+  position: relative;
+  z-index: 1;
+}
+.footer_social_area a {
+  border-radius: 50%;
+  height: 40px;
+  text-align: center;
+  width: 40px;
+  display: inline-block;
+  background-color: #f5f5ff;
+  line-height: 40px;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  margin-right: 10px;
+}
+.footer_social_area a i {
+  line-height: 36px;
+}
+.footer_social_area a:hover,
+.footer_social_area a:focus {
+  color: #ffffff;
+}
+
+@-webkit-keyframes bi-cycle {
+  0% {
+    left: 0;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+@keyframes bi-cycle {
+  0% {
+    left: 0;
+  }
+  100% {
+    left: 100%;
+  }
+}
+ol li,
+ul li {
+  list-style: none;
+}
+
+ol,
+ul {
+  margin: 0;
+  padding: 0;
+}
+
+/* Estilos para la sección de registro */
+.register-section {
+  background-color: #f2f2f2; /* Color de fondo del área de registro */
+  padding: 50px 20px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.register-form {
+  max-width: 400px;
+  background-color: #ffffff; /* Fondo blanco para el formulario */
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+}
+
+.register-form h2 {
+  margin-bottom: 20px;
+  text-align: left; /* Alinea el título a la izquierda */
+}
+
+.register-form form {
+  display: flex;
+  flex-direction: column;
+}
+
+.register-form label {
+  margin-bottom: 10px;
+  text-align: left; /* Alinea las etiquetas a la izquierda */
+}
+
+.register-form input[type="text"],
+.register-form input[type="password"],
+.register-form input[type="email"] {
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 16px;
+  width: calc(
+    100% - 22px
+  ); /* Asegura que ocupe todo el ancho disponible, restando el ancho del borde */
+  box-sizing: border-box; /* Incluye el padding y border en el ancho total */
+}
+
+.register-form button {
+  padding: 10px 20px;
+  background-color: #19a4bf;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.register-form button:hover {
+  background-color: #13738c;
+}
+
+.additional-links {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.additional-links a {
+  color: #333;
+  text-decoration: none;
+}
+
+.additional-links a:hover {
+  text-decoration: underline;
+}
