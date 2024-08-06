@@ -1,3 +1,40 @@
+<?php
+include '../../includes/database.php';
+
+$totalPeliculas = 0;
+$totalClientes = 0;
+$totalEmpleados = 0;
+
+$sqlPeliculas = 'SELECT COUNT(*) AS total FROM FIDE_PELICULAS_TB';
+$stidPeliculas = oci_parse($conn, $sqlPeliculas);
+oci_execute($stidPeliculas);
+$rowPeliculas = oci_fetch_assoc($stidPeliculas);
+if ($rowPeliculas) {
+    $totalPeliculas = $rowPeliculas['TOTAL'];
+}
+oci_free_statement($stidPeliculas);
+
+$sqlClientes = 'SELECT COUNT(*) AS total FROM FIDE_CLIENTES_TB';
+$stidClientes = oci_parse($conn, $sqlClientes);
+oci_execute($stidClientes);
+$rowClientes = oci_fetch_assoc($stidClientes);
+if ($rowClientes) {
+    $totalClientes = $rowClientes['TOTAL'];
+}
+oci_free_statement($stidClientes);
+
+$sqlEmpleados = 'SELECT COUNT(*) AS total FROM FIDE_EMPLEADOS_TB';
+$stidEmpleados = oci_parse($conn, $sqlEmpleados);
+oci_execute($stidEmpleados);
+$rowEmpleados = oci_fetch_assoc($stidEmpleados);
+if ($rowEmpleados) {
+    $totalEmpleados = $rowEmpleados['TOTAL'];
+}
+oci_free_statement($stidEmpleados);
+
+oci_close($conn);
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -20,34 +57,67 @@
 
   <!-- Sidebar -->
   <nav class="sidebar">
-        <h2>Opciones</h2>
-        <a href="clientes/clientes.php">Gestionar Clientes</a>
-        <a href="comida/comida.php">Gestionar Comida</a>
-        <a href="empleados/empleados.php">Gestionar Empleados</a>
-        <a href="metodo_pagos/metodo_pagos.php">Gestionar Métodos de Pago</a>
-        <a href="peliculas/peliculas.php">Gestionar Películas</a>
-        <a href="genero/genero.php">Gestionar Generos</a>
-        <a href="directores/directores.php">Gestionar Directores</a>
-        <a href="proovedores/proovedores.php">Gestionar Proveedores</a>
-        <a href="inventario/inventario.php">Gestionar Inventario</a>
-        <a href="posiciones/posiciones.php">Gestionar Posiciones</a>
-        <a href="tipos_sala/tipos_sala.php">Gestionar Tipos de Sala</a>
-    </nav>
+    <h2>Opciones</h2>
+    <a href="clientes/clientes.php">Gestionar Clientes</a>
+    <a href="comida/comida.php">Gestionar Comida</a>
+    <a href="empleados/empleados.php">Gestionar Empleados</a>
+    <a href="metodo_pagos/metodo_pagos.php">Gestionar Métodos de Pago</a>
+    <a href="peliculas/peliculas.php">Gestionar Películas</a>
+    <a href="genero/genero.php">Gestionar Generos</a>
+    <a href="directores/directores.php">Gestionar Directores</a>
+    <a href="proovedores/proovedores.php">Gestionar Proveedores</a>
+    <a href="inventario/inventario.php">Gestionar Inventario</a>
+    <a href="posiciones/posiciones.php">Gestionar Posiciones</a>
+    <a href="tipos_sala/tipos_sala.php">Gestionar Tipos de Sala</a>
+    <div class="sidebar-footer">
+      <a href="../../public/index.php" class="btn btn-danger">Salir</a>
+    </div>
+  </nav>
+
 
   <!-- Content -->
   <div class="content">
     <!-- Header -->
     <header class="header_area">
-      <a href="../../../public/index.php" class="header_link">
-          <h1>Movie Club</h1>
+      <a href="../dashboard.php" class="header_link">
+        <h1>Movie Club</h1>
       </a>
     </header>
+
 
     <!-- Main Content -->
     <section class="options_area">
       <div class="container">
-        <div class="row">
-          <!-- Contenido principal aquí -->
+        <div class="center-cards">
+          <!-- Tarjeta de Total de Películas -->
+          <div class="card-container">
+            <div class="card border-primary bg-primary text-white">
+              <div class="card-body text-center">
+                <h1 class="card-title display-4"><?php echo $totalPeliculas; ?></h1>
+                <h3>Películas</h3>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Tarjeta de Total de Clientes -->
+          <div class="card-container">
+            <div class="card border-primary bg-primary text-white">
+              <div class="card-body text-center">
+                <h1 class="card-title display-4"><?php echo $totalClientes; ?></h1>
+                <h3>Clientes</h3>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tarjeta de Total de Empleados -->
+          <div class="card-container">
+            <div class="card border-primary bg-primary text-white">
+              <div class="card-body text-center">
+                <h1 class="card-title display-4"><?php echo $totalEmpleados; ?></h1>
+                <h3>Empleados</h3>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
