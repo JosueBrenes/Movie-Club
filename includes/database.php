@@ -1,7 +1,7 @@
 <?php
 // Datos de conexión
-$username = 'MovieClubUserDB';
-$password = 'Filipenses4';
+$username = 'MovieClubDB';
+$password = 'MovieClub';
 $dbname = 'Movie_Club'; 
 $hostname = 'localhost:1521/orcl';
 
