@@ -2,48 +2,41 @@
 include '../../../includes/database.php';
 
 if (!$conn) {
-    echo "No se pudo conectar a la base de datos.";
-    exit;
+    die("Conexión fallida: " . htmlentities(oci_error()['message'], ENT_QUOTES));
 }
 
-$id_posicion = isset($_POST['id_posicion']) ? intval($_POST['id_posicion']) : 0;
-$nombre = isset($_POST['nombre']) ? $_POST['nombre'] : '';
-$descripcion = isset($_POST['descripcion']) ? $_POST['descripcion'] : '';
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $id_posicion = $_POST['id_posicion'];
+    $nombre = $_POST['nombre'];
+    $descripcion = $_POST['descripcion'];
 
-if ($id_posicion <= 0 || empty($nombre)) {
-    echo "Datos inválidos.";
-    exit;
+    // Validar que los campos no estén vacíos
+    if (empty($id_posicion) || empty($nombre) || empty($descripcion)) {
+        die("Todos los campos son requeridos.");
+    }
+
+    // Preparar la llamada al procedimiento almacenado
+    $sql = 'BEGIN FIDE_POSICION_TB_ACTUALIZAR_POSICION_SP(:id_posicion, :nombre, :descripcion); END;';
+    $stid = oci_parse($conn, $sql);
+
+    // Asignar los valores a los parámetros del procedimiento
+    oci_bind_by_name($stid, ':id_posicion', $id_posicion);
+    oci_bind_by_name($stid, ':nombre', $nombre);
+    oci_bind_by_name($stid, ':descripcion', $descripcion);
+
+    // Ejecutar el procedimiento almacenado
+    if (oci_execute($stid)) {
+        header('Location: posiciones.php?msg=Posición actualizada con éxito');
+        exit;
+    } else {
+        $error = oci_error($stid);
+        die("Error al actualizar la posición: " . htmlentities($error['message'], ENT_QUOTES));
+    }
+
+    // Liberar recursos y cerrar conexión
+    oci_free_statement($stid);
+    oci_close($conn);
+} else {
+    die("Método de solicitud no válido.");
 }
-
-$sql = '
-    UPDATE FIDE_POSICION_TB
-    SET NOMBRE = :nombre, DESCRIPCION = :descripcion
-    WHERE ID_POSICION = :id_posicion
-';
-
-$stid = oci_parse($conn, $sql);
-
-oci_bind_by_name($stid, ':id_posicion', $id_posicion);
-oci_bind_by_name($stid, ':nombre', $nombre);
-oci_bind_by_name($stid, ':descripcion', $descripcion);
-
-if (!$stid) {
-    $e = oci_error($conn);
-    echo "Error al preparar la consulta: " . $e['message'];
-    exit;
-}
-
-$success = oci_execute($stid, OCI_COMMIT_ON_SUCCESS);
-
-if (!$success) {
-    $e = oci_error($stid);
-    echo "Error al ejecutar la consulta: " . $e['message'];
-    exit;
-}
-
-oci_free_statement($stid);
-oci_close($conn);
-
-header('Location: posiciones.php'); 
-exit;
 ?>

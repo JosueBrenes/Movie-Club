@@ -1,3 +1,15 @@
+<?php
+include '../../../includes/database.php';
+
+if (!$conn) {
+    die("Conexión fallida: " . htmlentities(oci_error()['message'], ENT_QUOTES));
+}
+
+// Obtener las posiciones disponibles
+$positions_query = 'SELECT ID_POSICION, NOMBRE FROM FIDE_POSICION_TB';
+$positions_stid = oci_parse($conn, $positions_query);
+oci_execute($positions_stid);
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -45,7 +57,13 @@
                     </div>
                     <div class="form-group">
                         <label for="id_posicion">ID Posición</label>
-                        <input type="number" id="id_posicion" name="id_posicion" class="form-control">
+                        <select id="id_posicion" name="id_posicion" class="form-control">
+                            <?php while ($row = oci_fetch_assoc($positions_stid)) { ?>
+                                <option value="<?php echo htmlspecialchars($row['ID_POSICION']); ?>">
+                                    <?php echo htmlspecialchars($row['NOMBRE']); ?>
+                                </option>
+                            <?php } ?>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="contrasena">Contraseña</label>
@@ -65,3 +83,8 @@
     </div>
 </body>
 </html>
+
+<?php
+oci_free_statement($positions_stid);
+oci_close($conn);
+?>

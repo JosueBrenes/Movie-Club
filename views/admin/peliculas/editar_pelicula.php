@@ -105,7 +105,7 @@ oci_close($conn);
                     </div>
                     <div class="form-group">
                         <label for="genero">Género</label>
-                        <select id="genero" name="genero" class="form-control" required>
+                        <select id="genero" name="id_genero" class="form-control" required>
                             <?php while ($genero = oci_fetch_assoc($stid_generos)): ?>
                                 <option value="<?php echo htmlspecialchars($genero['ID_GENERO'], ENT_QUOTES); ?>" <?php if ($genero['ID_GENERO'] == $pelicula['ID_GENERO']) echo 'selected'; ?>>
                                     <?php echo htmlspecialchars($genero['NOMBRE'], ENT_QUOTES); ?>
@@ -115,7 +115,7 @@ oci_close($conn);
                     </div>
                     <div class="form-group">
                         <label for="director">Director</label>
-                        <select id="director" name="director" class="form-control" required>
+                        <select id="director" name="id_director" class="form-control" required>
                             <?php while ($director = oci_fetch_assoc($stid_directores)): ?>
                                 <option value="<?php echo htmlspecialchars($director['ID_DIRECTOR'], ENT_QUOTES); ?>" <?php if ($director['ID_DIRECTOR'] == $pelicula['ID_DIRECTOR']) echo 'selected'; ?>>
                                     <?php echo htmlspecialchars($director['NOMBRE'], ENT_QUOTES); ?>
@@ -125,7 +125,7 @@ oci_close($conn);
                     </div>
                     <div class="form-group">
                         <label for="idioma">Idioma</label>
-                        <select id="idioma" name="idioma" class="form-control" required>
+                        <select id="idioma" name="id_idiomas" class="form-control" required>
                             <?php while ($idioma = oci_fetch_assoc($stid_idiomas)): ?>
                                 <option value="<?php echo htmlspecialchars($idioma['ID_IDIOMAS'], ENT_QUOTES); ?>" <?php if ($idioma['ID_IDIOMAS'] == $pelicula['ID_IDIOMAS']) echo 'selected'; ?>>
                                     <?php echo htmlspecialchars($idioma['NOMBRE'], ENT_QUOTES); ?>
@@ -135,7 +135,7 @@ oci_close($conn);
                     </div>
                     <div class="form-group">
                         <label for="estado">Estado</label>
-                        <select id="estado" name="estado" class="form-control" required>
+                        <select id="estado" name="id_estado" class="form-control" required>
                             <?php while ($estado = oci_fetch_assoc($stid_estados)): ?>
                                 <option value="<?php echo htmlspecialchars($estado['ID_ESTADO'], ENT_QUOTES); ?>" <?php if ($estado['ID_ESTADO'] == $pelicula['ID_ESTADO']) echo 'selected'; ?>>
                                     <?php echo htmlspecialchars($estado['NOMBRE'], ENT_QUOTES); ?>
@@ -145,6 +145,7 @@ oci_close($conn);
                     </div>
                     <button type="submit" class="btn" style="background-color: #013e6a; color: white; margin-bottom: 2rem;">Actualizar</button>
                 </form>
+
             </div>
         </section>
 

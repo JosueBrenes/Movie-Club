@@ -11,27 +11,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $apellido = $_POST['apellido'];
     $email = $_POST['email'];
 
-    if (empty($cliente_id) || empty($nombre) || empty($apellido)) {
-        die("Los campos Nombre y Apellido son requeridos.");
+    // Validar que los campos no estén vacíos
+    if (empty($cliente_id) || empty($nombre) || empty($apellido) || empty($email)) {
+        die("Todos los campos son requeridos.");
     }
 
-    $sql = 'UPDATE FIDE_CLIENTES_TB SET NOMBRE = :nombre, APELLIDO = :apellido, CORREO_ELECTRONICO = :email WHERE ID_CLIENTE = :cliente_id';
+    // Preparar la llamada al procedimiento almacenado
+    $sql = 'BEGIN FIDE_CLIENTES_TB_ACTUALIZAR_CLIENTES_SP(:cliente_id, :nombre, :apellido, :email); END;';
     $stid = oci_parse($conn, $sql);
 
+    // Asignar los valores a los parámetros del procedimiento
     oci_bind_by_name($stid, ':cliente_id', $cliente_id);
     oci_bind_by_name($stid, ':nombre', $nombre);
     oci_bind_by_name($stid, ':apellido', $apellido);
     oci_bind_by_name($stid, ':email', $email);
 
+    // Ejecutar el procedimiento almacenado
     if (oci_execute($stid)) {
         header('Location: clientes.php?msg=Cliente actualizado con éxito');
+        exit;
     } else {
         $error = oci_error($stid);
         die("Error al actualizar el cliente: " . htmlentities($error['message'], ENT_QUOTES));
     }
 
+    // Liberar recursos y cerrar conexión
     oci_free_statement($stid);
     oci_close($conn);
 } else {
     die("Método de solicitud no válido.");
 }
+?>

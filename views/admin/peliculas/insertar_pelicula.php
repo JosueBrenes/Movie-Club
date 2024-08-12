@@ -2,8 +2,7 @@
 include '../../../includes/database.php';
 
 if (!$conn) {
-    echo "No se pudo conectar a la base de datos.";
-    exit;
+    die("Conexión fallida: " . htmlentities(oci_error()['message'], ENT_QUOTES));
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -14,9 +13,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_idiomas = $_POST['id_idiomas'];
     $id_estado = $_POST['id_estado'];
 
-    $sql = 'INSERT INTO FIDE_PELICULAS_TB (ID_PELICULA, NOMBRE, ID_GENERO, ID_DIRECTOR, DESCRIPCION, ID_IDIOMAS, ID_ESTADO) VALUES (FIDE_PELICULAS_SEQ.NEXTVAL, :nombre, :id_genero, :id_director, :descripcion, :id_idiomas, :id_estado)';
-    $stid = oci_parse($conn, $sql);
+    // Obtener el siguiente valor de la secuencia para ID_PELICULA
+    $query = 'SELECT FIDE_PELICULAS_SEQ.NEXTVAL AS id_pelicula FROM dual';
+    $stid = oci_parse($conn, $query);
+    oci_execute($stid);
+    $row = oci_fetch_assoc($stid);
+    $id_pelicula = $row['ID_PELICULA'];
+    oci_free_statement($stid);
 
+    // Llamar al procedimiento almacenado
+    $proc = 'BEGIN FIDE_PELICULAS_TB_INSERTAR_PELICULAS_SP(:id_pelicula, :nombre, :id_genero, :id_director, :descripcion, :id_idiomas, :id_estado); END;';
+    $stid = oci_parse($conn, $proc);
+
+    oci_bind_by_name($stid, ':id_pelicula', $id_pelicula);
     oci_bind_by_name($stid, ':nombre', $nombre);
     oci_bind_by_name($stid, ':id_genero', $id_genero);
     oci_bind_by_name($stid, ':id_director', $id_director);
@@ -28,8 +37,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($result) {
         header('Location: peliculas.php?message=success');
+        exit();
     } else {
-        echo "Error al insertar la película.";
+        $e = oci_error($stid);
+        echo "Error al insertar la película: " . htmlentities($e['message'], ENT_QUOTES);
     }
 
     oci_free_statement($stid);

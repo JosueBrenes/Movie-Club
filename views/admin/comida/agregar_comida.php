@@ -4,6 +4,16 @@ include '../../../includes/database.php';
 if (!$conn) {
     die("Conexión fallida: " . htmlentities(oci_error()['message'], ENT_QUOTES));
 }
+
+$query = 'SELECT ID_INVENTARIO, NOMBRE FROM FIDE_INVENTARIO_TB';
+$stid = oci_parse($conn, $query);
+oci_execute($stid);
+
+$inventarios = [];
+while (($row = oci_fetch_assoc($stid)) != false) {
+    $inventarios[] = $row;
+}
+oci_free_statement($stid);
 ?>
 
 <!DOCTYPE html>
@@ -37,7 +47,14 @@ if (!$conn) {
                 <form action="insertar_comida.php" method="POST">
                     <div class="form-group">
                         <label for="id_inventario">ID Inventario</label>
-                        <input type="number" id="id_inventario" name="id_inventario" class="form-control">
+                        <select id="id_inventario" name="id_inventario" class="form-control" required>
+                            <option value="">Seleccione un inventario</option>
+                            <?php foreach ($inventarios as $inventario): ?>
+                                <option value="<?php echo htmlspecialchars($inventario['ID_INVENTARIO'], ENT_QUOTES); ?>">
+                                    <?php echo htmlspecialchars($inventario['NOMBRE'], ENT_QUOTES); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="precio">Precio</label>

@@ -11,6 +11,7 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 
 $id_comida = $_GET['id'];
 
+// Preparar la consulta para obtener los datos de la comida
 $sql = 'SELECT * FROM FIDE_COMIDA_TB WHERE ID_COMIDA = :id_comida';
 $stid = oci_parse($conn, $sql);
 oci_bind_by_name($stid, ':id_comida', $id_comida);
@@ -21,7 +22,16 @@ if (!$comida) {
     die("No se encontró la comida.");
 }
 
-oci_free_statement($stid);
+// Obtener la lista de inventarios para el campo select
+$query = 'SELECT ID_INVENTARIO, NOMBRE FROM FIDE_INVENTARIO_TB';
+$stid_inventario = oci_parse($conn, $query);
+oci_execute($stid_inventario);
+
+$inventarios = [];
+while (($row = oci_fetch_assoc($stid_inventario)) != false) {
+    $inventarios[] = $row;
+}
+oci_free_statement($stid_inventario);
 oci_close($conn);
 ?>
 
@@ -57,7 +67,15 @@ oci_close($conn);
                     <input type="hidden" name="id_comida" value="<?php echo htmlspecialchars($comida['ID_COMIDA'] ?? '', ENT_QUOTES); ?>">
                     <div class="form-group">
                         <label for="id_inventario">ID Inventario</label>
-                        <input type="number" id="id_inventario" name="id_inventario" class="form-control" value="<?php echo htmlspecialchars($comida['ID_INVENTARIO'] ?? '', ENT_QUOTES); ?>">
+                        <select id="id_inventario" name="id_inventario" class="form-control" required>
+                            <option value="">Seleccione un inventario</option>
+                            <?php foreach ($inventarios as $inventario): ?>
+                                <option value="<?php echo htmlspecialchars($inventario['ID_INVENTARIO'], ENT_QUOTES); ?>"
+                                    <?php echo ($comida['ID_INVENTARIO'] == $inventario['ID_INVENTARIO']) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($inventario['NOMBRE'], ENT_QUOTES); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="precio">Precio</label>

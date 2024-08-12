@@ -2,36 +2,35 @@
 include '../../../includes/database.php';
 
 if (!$conn) {
-    echo "No se pudo conectar a la base de datos.";
-    exit;
+    die("Conexión fallida: " . htmlentities(oci_error()['message'], ENT_QUOTES));
 }
 
 $nombre = $_POST['nombre'];
 $descripcion = $_POST['descripcion'];
 
 // Obtener el siguiente valor de la secuencia
-$query = 'SELECT FIDE_TIPO_SALA_SEQ.NEXTVAL AS id_tipo_sala FROM dual';
+$query = 'SELECT FIDE_IDIOMAS_SEQ.NEXTVAL AS id_idiomas FROM dual';
 $stid = oci_parse($conn, $query);
 oci_execute($stid);
 $row = oci_fetch_assoc($stid);
-$id_tipo_sala = $row['ID_TIPO_SALA'];
+$id_idiomas = $row['ID_IDIOMAS'];
 
 // Llamar al procedimiento almacenado
-$proc = 'BEGIN FIDE_TIPO_SALA_TB_INSERTAR_TIPO_SALA_SP(:id_tipo_sala, :nombre, :descripcion); END;';
+$proc = 'BEGIN FIDE_IDIOMAS_TB_INSERTAR_IDIOMAS_SP(:id_idiomas, :nombre, :descripcion); END;';
 $stid = oci_parse($conn, $proc);
 
-oci_bind_by_name($stid, ':id_tipo_sala', $id_tipo_sala);
+oci_bind_by_name($stid, ':id_idiomas', $id_idiomas);
 oci_bind_by_name($stid, ':nombre', $nombre);
 oci_bind_by_name($stid, ':descripcion', $descripcion);
 
 $success = oci_execute($stid);
 
 if ($success) {
-    header('Location: tipos_sala.php');
+    header('Location: idiomas.php');
     exit();
 } else {
     $e = oci_error($stid);
-    echo "Error al agregar tipo de sala: " . $e['message'];
+    echo "Error al agregar idioma: " . htmlentities($e['message'], ENT_QUOTES);
 }
 
 oci_free_statement($stid);

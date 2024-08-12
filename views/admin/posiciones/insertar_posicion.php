@@ -2,38 +2,40 @@
 include '../../../includes/database.php';
 
 if (!$conn) {
-    echo "No se pudo conectar a la base de datos.";
-    exit;
+    die("Conexión fallida: " . htmlentities(oci_error()['message'], ENT_QUOTES));
 }
 
-$nombre = $_POST['nombre'];
-$descripcion = $_POST['descripcion'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $nombre = $_POST['nombre'];
+    $descripcion = $_POST['descripcion'];
 
-// Obtener el siguiente valor de la secuencia
-$query = 'SELECT FIDE_POSICION_SEQ.NEXTVAL AS id_posicion FROM dual';
-$stid = oci_parse($conn, $query);
-oci_execute($stid);
-$row = oci_fetch_assoc($stid);
-$id_posicion = $row['ID_POSICION'];
+    // Obtener el siguiente valor de la secuencia para ID_POSICION
+    $query = 'SELECT FIDE_POSICION_SEQ.NEXTVAL AS id_posicion FROM dual';
+    $stid = oci_parse($conn, $query);
+    oci_execute($stid);
+    $row = oci_fetch_assoc($stid);
+    $id_posicion = $row['ID_POSICION'];
+    oci_free_statement($stid);
 
-$sql = 'INSERT INTO FIDE_POSICION_TB (ID_POSICION, NOMBRE, DESCRIPCION) 
-        VALUES (:id_posicion, :nombre, :descripcion)';
-$stid = oci_parse($conn, $sql);
+    // Llamar al procedimiento almacenado
+    $proc = 'BEGIN FIDE_POSICION_TB_INSERTAR_POSICION_SP(:id_posicion, :nombre, :descripcion); END;';
+    $stid = oci_parse($conn, $proc);
 
-oci_bind_by_name($stid, ':id_posicion', $id_posicion);
-oci_bind_by_name($stid, ':nombre', $nombre);
-oci_bind_by_name($stid, ':descripcion', $descripcion);
+    oci_bind_by_name($stid, ':id_posicion', $id_posicion);
+    oci_bind_by_name($stid, ':nombre', $nombre);
+    oci_bind_by_name($stid, ':descripcion', $descripcion);
 
-$success = oci_execute($stid);
+    $result = oci_execute($stid);
 
-if ($success) {
-    header('Location: posiciones.php');
-    exit();
-} else {
-    $e = oci_error($stid);
-    echo "Error al agregar posición: " . $e['message'];
+    if ($result) {
+        header('Location: posiciones.php');
+        exit();
+    } else {
+        $e = oci_error($stid);
+        echo "Error al agregar posición: " . htmlentities($e['message'], ENT_QUOTES);
+    }
+
+    oci_free_statement($stid);
+    oci_close($conn);
 }
-
-oci_free_statement($stid);
-oci_close($conn);
 ?>

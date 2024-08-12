@@ -11,32 +11,45 @@ $descripcion = $_POST['descripcion'];
 $cantidad = $_POST['cantidad'];
 $id_proveedor = $_POST['id_proveedor'];
 
-$query = 'SELECT FIDE_INVENTARIO_SEQ.NEXTVAL AS id_inventario FROM dual';
-$stid = oci_parse($conn, $query);
-oci_execute($stid);
-$row = oci_fetch_assoc($stid);
-$id_inventario = $row['ID_INVENTARIO'];
+try {
+    // Obtener el siguiente valor de la secuencia para ID_INVENTARIO
+    $query = 'SELECT FIDE_INVENTARIO_SEQ.NEXTVAL AS id_inventario FROM dual';
+    $stid = oci_parse($conn, $query);
+    oci_execute($stid);
+    $row = oci_fetch_assoc($stid);
+    $id_inventario = $row['ID_INVENTARIO'];
+    oci_free_statement($stid);
 
-$sql = 'INSERT INTO FIDE_INVENTARIO_TB (ID_INVENTARIO, NOMBRE, DESCRIPCION, CANTIDAD, ID_PROVEEDOR) 
-        VALUES (:id_inventario, :nombre, :descripcion, :cantidad, :id_proveedor)';
-$stid = oci_parse($conn, $sql);
+    // Preparar la llamada al procedimiento almacenado
+    $sql = 'BEGIN FIDE_INVENTARIO_TB_INSERTAR_INVENTARIO_SP(:id_inventario, :nombre, :descripcion, :cantidad, :id_proveedor); END;';
+    $stid = oci_parse($conn, $sql);
 
-oci_bind_by_name($stid, ':id_inventario', $id_inventario);
-oci_bind_by_name($stid, ':nombre', $nombre);
-oci_bind_by_name($stid, ':descripcion', $descripcion);
-oci_bind_by_name($stid, ':cantidad', $cantidad);
-oci_bind_by_name($stid, ':id_proveedor', $id_proveedor);
+    // Asociar los parámetros
+    oci_bind_by_name($stid, ':id_inventario', $id_inventario);
+    oci_bind_by_name($stid, ':nombre', $nombre);
+    oci_bind_by_name($stid, ':descripcion', $descripcion);
+    oci_bind_by_name($stid, ':cantidad', $cantidad);
+    oci_bind_by_name($stid, ':id_proveedor', $id_proveedor);
 
-$success = oci_execute($stid);
+    // Ejecutar el procedimiento
+    $success = oci_execute($stid);
 
-if ($success) {
-    header('Location: inventario.php');
-    exit();
-} else {
-    $e = oci_error($stid);
-    echo "Error al agregar inventario: " . $e['message'];
+    if ($success) {
+        // Redirigir a la página de inventario con un mensaje de éxito
+        header('Location: inventario.php?msg=Inventario agregado con éxito');
+        exit();
+    } else {
+        // Mostrar el mensaje de error
+        $e = oci_error($stid);
+        echo "Error al agregar inventario: " . htmlentities($e['message'], ENT_QUOTES);
+    }
+
+    // Liberar los recursos
+    oci_free_statement($stid);
+} catch (Exception $e) {
+    echo "Error: " . $e->getMessage();
 }
 
-oci_free_statement($stid);
+// Cerrar la conexión
 oci_close($conn);
 ?>

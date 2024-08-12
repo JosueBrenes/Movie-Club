@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.19.2",
+    "movie_club": "file:",
     "oracledb": "^6.5.1",
     "php-cgi": "^0.2.0",
     "php-express": "^0.0.3"

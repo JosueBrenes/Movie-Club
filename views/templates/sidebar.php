@@ -6,7 +6,10 @@
     <a href="../metodo_pagos/metodo_pagos.php">Gestionar Métodos de Pago</a>
     <a href="../peliculas/peliculas.php">Gestionar Películas</a>
     <a href="../genero/genero.php">Gestionar Generos</a>
+    <a href="../idiomas/idiomas.php">Gestionar Idiomas</a>
     <a href="../directores/directores.php">Gestionar Directores</a>
+    <a href="../salas/salas.php">Gestionar Salas</a>
+    <a href="../funciones/funciones.php">Gestionar Funciones</a>
     <a href="../proovedores/proovedores.php">Gestionar Proveedores</a>
     <a href="../inventario/inventario.php">Gestionar Inventario</a>
     <a href="../posiciones/posiciones.php">Gestionar Posiciones</a>

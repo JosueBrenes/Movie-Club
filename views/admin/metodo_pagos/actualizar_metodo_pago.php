@@ -2,47 +2,43 @@
 include '../../../includes/database.php';
 
 if (!$conn) {
-    echo "No se pudo conectar a la base de datos.";
-    exit;
+    die("Conexión fallida: " . htmlentities(oci_error()['message'], ENT_QUOTES));
 }
 
-$id_metodo_pago = isset($_POST['id_metodo_pago']) ? intval($_POST['id_metodo_pago']) : 0;
-$nombre = isset($_POST['nombre']) ? $_POST['nombre'] : '';
-$descripcion = isset($_POST['descripcion']) ? $_POST['descripcion'] : '';
-$id_estado = isset($_POST['estado']) ? intval($_POST['estado']) : 0;
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $id_metodo_pago = $_POST['id_metodo_pago'];
+    $nombre = $_POST['nombre'];
+    $descripcion = $_POST['descripcion'];
+    $estado = $_POST['estado'];
 
-if ($id_metodo_pago <= 0 || empty($nombre) || $id_estado <= 0) {
-    echo "Datos inválidos.";
-    exit;
+    // Validar que los campos no estén vacíos
+    if (empty($id_metodo_pago) || empty($nombre) || empty($descripcion) || empty($estado)) {
+        die("Todos los campos son requeridos.");
+    }
+
+    // Preparar la llamada al procedimiento almacenado
+    $sql = 'BEGIN FIDE_METODO_PAGO_TB_ACTUALIZAR_METODO_PAGO_SP(:id_metodo_pago, :nombre, :descripcion, :estado); END;';
+    $stid = oci_parse($conn, $sql);
+
+    // Asignar los valores a los parámetros del procedimiento
+    oci_bind_by_name($stid, ':id_metodo_pago', $id_metodo_pago);
+    oci_bind_by_name($stid, ':nombre', $nombre);
+    oci_bind_by_name($stid, ':descripcion', $descripcion);
+    oci_bind_by_name($stid, ':estado', $estado);
+
+    // Ejecutar el procedimiento almacenado
+    if (oci_execute($stid)) {
+        header('Location: metodo_pagos.php?msg=Método de pago actualizado con éxito');
+        exit;
+    } else {
+        $error = oci_error($stid);
+        die("Error al actualizar el método de pago: " . htmlentities($error['message'], ENT_QUOTES));
+    }
+
+    // Liberar recursos y cerrar conexión
+    oci_free_statement($stid);
+    oci_close($conn);
+} else {
+    die("Método de solicitud no válido.");
 }
-
-$sql = '
-    UPDATE FIDE_METODO_PAGO_TB
-    SET NOMBRE = :nombre, DESCRIPCION = :descripcion, ID_ESTADO = :id_estado
-    WHERE ID_METODO_PAGO = :id_metodo_pago
-';
-
-$stid = oci_parse($conn, $sql);
-
-oci_bind_by_name($stid, ':id_metodo_pago', $id_metodo_pago);
-oci_bind_by_name($stid, ':nombre', $nombre);
-oci_bind_by_name($stid, ':descripcion', $descripcion);
-oci_bind_by_name($stid, ':id_estado', $id_estado);
-
-if (!$stid) {
-    $e = oci_error($conn);
-    echo "Error al preparar la consulta: " . $e['message'];
-    exit;
-}
-
-$success = oci_execute($stid);
-
-if (!$success) {
-    $e = oci_error($stid);
-    echo "Error al ejecutar la consulta: " . $e['message'];
-    exit;
-}
-
-header("Location: metodo_pagos.php");
-exit;
 ?>

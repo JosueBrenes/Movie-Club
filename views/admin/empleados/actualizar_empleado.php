@@ -18,17 +18,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         die("Todos los campos son requeridos.");
     }
 
-    if (!empty($contrasena)) {
-        $hashed_contrasena = password_hash($contrasena, PASSWORD_BCRYPT);
-        $sql = 'UPDATE FIDE_EMPLEADOS_TB SET NOMBRE = :nombre, APELLIDO = :apellido, CORREO_ELECTRONICO = :correo, TELEFONO = :telefono, ID_POSICION = :id_posicion, CONTRASENA = :contrasena WHERE ID_EMPLEADO = :id_empleado';
-        $stid = oci_parse($conn, $sql);
+    // Prepara la llamada al procedimiento almacenado
+    $sql = 'BEGIN FIDE_EMPLEADOS_TB_ACTUALIZAR_EMPLEADO_SP(:id_empleado, :nombre, :apellido, :correo, :telefono, :id_posicion); END;';
+    $stid = oci_parse($conn, $sql);
 
-        oci_bind_by_name($stid, ':contrasena', $hashed_contrasena);
-    } else {
-        $sql = 'UPDATE FIDE_EMPLEADOS_TB SET NOMBRE = :nombre, APELLIDO = :apellido, CORREO_ELECTRONICO = :correo, TELEFONO = :telefono, ID_POSICION = :id_posicion WHERE ID_EMPLEADO = :id_empleado';
-        $stid = oci_parse($conn, $sql);
-    }
-
+    // Asigna los valores a los parámetros del procedimiento
     oci_bind_by_name($stid, ':id_empleado', $id_empleado);
     oci_bind_by_name($stid, ':nombre', $nombre);
     oci_bind_by_name($stid, ':apellido', $apellido);
@@ -36,6 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     oci_bind_by_name($stid, ':telefono', $telefono);
     oci_bind_by_name($stid, ':id_posicion', $id_posicion);
 
+    // Ejecuta el procedimiento almacenado
     if (oci_execute($stid)) {
         header('Location: empleados.php?msg=Empleado actualizado con éxito');
         exit;

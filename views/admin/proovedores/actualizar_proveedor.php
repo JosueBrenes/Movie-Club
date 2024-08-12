@@ -2,50 +2,40 @@
 include '../../../includes/database.php';
 
 if (!$conn) {
-    echo "No se pudo conectar a la base de datos.";
-    exit;
+    die("Conexión fallida: " . htmlentities(oci_error()['message'], ENT_QUOTES));
 }
 
-$id_proveedor = isset($_POST['id_proveedor']) ? intval($_POST['id_proveedor']) : 0;
-$nombre = isset($_POST['nombre']) ? $_POST['nombre'] : '';
-$contacto = isset($_POST['contacto']) ? $_POST['contacto'] : '';
-$telefono = isset($_POST['telefono']) ? $_POST['telefono'] : '';
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $id_proveedor = $_POST['id_proveedor'];
+    $nombre = $_POST['nombre'];
+    $contacto = $_POST['contacto'];
+    $telefono = $_POST['telefono'];
 
-if ($id_proveedor <= 0 || empty($nombre)) {
-    echo "Datos inválidos.";
-    exit;
+    if (empty($id_proveedor) || empty($nombre) || empty($contacto) || empty($telefono)) {
+        die("Todos los campos son requeridos.");
+    }
+
+    // Prepara la llamada al procedimiento almacenado
+    $sql = 'BEGIN FIDE_PROVEEDORES_TB_ACTUALIZAR_PROVEEDOR_SP(:id_proveedor, :nombre, :contacto, :telefono); END;';
+    $stid = oci_parse($conn, $sql);
+
+    // Asigna los valores a los parámetros del procedimiento
+    oci_bind_by_name($stid, ':id_proveedor', $id_proveedor);
+    oci_bind_by_name($stid, ':nombre', $nombre);
+    oci_bind_by_name($stid, ':contacto', $contacto);
+    oci_bind_by_name($stid, ':telefono', $telefono);
+
+    // Ejecuta el procedimiento almacenado
+    if (oci_execute($stid)) {
+        header('Location: proovedores.php?msg=Proveedor actualizado con éxito');
+        exit;
+    } else {
+        $error = oci_error($stid);
+        die("Error al actualizar el proveedor: " . htmlentities($error['message'], ENT_QUOTES));
+    }
+
+    oci_free_statement($stid);
+    oci_close($conn);
+} else {
+    die("Método de solicitud no válido.");
 }
-
-$sql = '
-    UPDATE FIDE_PROVEEDORES_TB
-    SET NOMBRE = :nombre, CONTACTO = :contacto, TELEFONO = :telefono
-    WHERE ID_PROVEEDOR = :id_proveedor
-';
-
-$stid = oci_parse($conn, $sql);
-
-oci_bind_by_name($stid, ':id_proveedor', $id_proveedor);
-oci_bind_by_name($stid, ':nombre', $nombre);
-oci_bind_by_name($stid, ':contacto', $contacto);
-oci_bind_by_name($stid, ':telefono', $telefono);
-
-if (!$stid) {
-    $e = oci_error($conn);
-    echo "Error al preparar la consulta: " . $e['message'];
-    exit;
-}
-
-$success = oci_execute($stid, OCI_COMMIT_ON_SUCCESS);
-
-if (!$success) {
-    $e = oci_error($stid);
-    echo "Error al ejecutar la consulta: " . $e['message'];
-    exit;
-}
-
-oci_free_statement($stid);
-oci_close($conn);
-
-header('Location: proovedores.php'); 
-exit;
-?>
