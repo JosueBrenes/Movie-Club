@@ -76,11 +76,11 @@ if (!$success) {
                             <tr>
                                 <td><?php echo htmlspecialchars($row['ID_PELICULA'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['NOMBRE'], ENT_QUOTES); ?></td>
-                                <td><?php echo htmlspecialchars($row['NOMBRE_GENERO'], ENT_QUOTES); ?></td>
-                                <td><?php echo htmlspecialchars($row['NOMBRE_DIRECTOR'], ENT_QUOTES); ?></td>
+                                <td><?php echo htmlspecialchars($row['ID_GENERO'], ENT_QUOTES); ?></td>
+                                <td><?php echo htmlspecialchars($row['ID_DIRECTOR'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['DESCRIPCION'], ENT_QUOTES); ?></td>
-                                <td><?php echo htmlspecialchars($row['NOMBRE_IDIOMA'], ENT_QUOTES); ?></td>
-                                <td><?php echo htmlspecialchars($row['NOMBRE_ESTADO'], ENT_QUOTES); ?></td>
+                                <td><?php echo htmlspecialchars($row['ID_IDIOMAS'], ENT_QUOTES); ?></td>
+                                <td><?php echo htmlspecialchars($row['ID_ESTADO'], ENT_QUOTES); ?></td>
                                 <td>
                                     <a href="editar_pelicula.php?id=<?php echo htmlspecialchars($row['ID_PELICULA'], ENT_QUOTES); ?>" class="btn" style="background-color: #013e6a; color: white;">Editar</a>
                                     <a href="eliminar_pelicula.php?id=<?php echo htmlspecialchars($row['ID_PELICULA'], ENT_QUOTES); ?>" class="btn btn-danger" style="background-color: #d9534f; color: white;">Eliminar</a>
