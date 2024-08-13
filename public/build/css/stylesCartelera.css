@@ -32,13 +32,13 @@ body {
 }
 
 .btn-primary {
-  background-color: #007bff;
-  border-color: #007bff;
+  background-color: #030441;
+  border-color: #030441;
 }
 
 .btn-primary:hover {
-  background-color: #0056b3;
-  border-color: #004085;
+  background-color: #040536;
+  border-color: #040536;
 }
 
 .custom-alert {
