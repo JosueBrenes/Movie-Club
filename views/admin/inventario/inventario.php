@@ -2,14 +2,31 @@
 include '../../../includes/database.php';
 
 if (!$conn) {
-    echo "No se pudo conectar a la base de datos.";
-    exit;
+    die("Conexión fallida: " . htmlentities(oci_error()['message'], ENT_QUOTES));
 }
 
-$sql = 'SELECT * FROM FIDE_INVENTARIO_TB';
-$stid = oci_parse($conn, $sql);
+// Preparar la llamada al procedimiento almacenado
+$stid = oci_parse($conn, 'BEGIN FIDE_INVENTARIO_TB_OBTENER_INVENTARIO_SP(:p_cursor); END;');
 
-oci_execute($stid);
+// Crear y asociar el cursor de salida
+$cursor = oci_new_cursor($conn);
+oci_bind_by_name($stid, ':p_cursor', $cursor, -1, OCI_B_CURSOR);
+
+// Ejecutar el procedimiento almacenado
+$success = oci_execute($stid);
+
+if (!$success) {
+    $e = oci_error($stid);
+    die("Error al ejecutar el procedimiento almacenado: " . $e['message']);
+}
+
+// Ejecutar el cursor para obtener los resultados
+$success = oci_execute($cursor);
+
+if (!$success) {
+    $e = oci_error($cursor);
+    die("Error al ejecutar el cursor: " . $e['message']);
+}
 ?>
 
 <!DOCTYPE html>
@@ -41,7 +58,7 @@ oci_execute($stid);
             <div class="container mt-5">
                 <h1 style="color: #333">Inventario</h1>
                 <a href="agregar_inventario.php" class="button">Agregar Nuevo Inventario</a>
-                <table class="table table-striped">
+                <table class="table table-striped mt-3">
                     <thead>
                         <tr>
                             <th>ID Inventario</th>
@@ -53,7 +70,7 @@ oci_execute($stid);
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($row = oci_fetch_assoc($stid)): ?>
+                        <?php while ($row = oci_fetch_assoc($cursor)): ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($row['ID_INVENTARIO'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['NOMBRE'], ENT_QUOTES); ?></td>
@@ -62,7 +79,7 @@ oci_execute($stid);
                                 <td><?php echo htmlspecialchars($row['ID_PROVEEDOR'], ENT_QUOTES); ?></td>
                                 <td>
                                     <a href="editar_inventario.php?id=<?php echo htmlspecialchars($row['ID_INVENTARIO'], ENT_QUOTES); ?>" class="btn" style="background-color: #013e6a; color: white;">Editar</a>
-                                    <a href="eliminar_inventario.php?id=<?php echo htmlspecialchars($row['ID_INVENTARIO'], ENT_QUOTES); ?>" class="btn btn-danger">Eliminar</a>
+                                    <a href="eliminar_inventario.php?id=<?php echo htmlspecialchars($row['ID_INVENTARIO'], ENT_QUOTES); ?>" class="btn btn-danger" onclick="return confirm('¿Estás seguro de que deseas eliminar este inventario?');">Eliminar</a>
                                 </td>
                             </tr>
                         <?php endwhile; ?>
@@ -78,10 +95,11 @@ oci_execute($stid);
             </p>
         </footer>
     </div>
+
+    <?php
+    oci_free_statement($stid);
+    oci_free_statement($cursor);
+    oci_close($conn);
+    ?>
 </body>
 </html>
-
-<?php
-oci_free_statement($stid);
-oci_close($conn);
-?>

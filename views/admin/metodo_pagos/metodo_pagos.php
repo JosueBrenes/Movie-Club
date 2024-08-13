@@ -6,26 +6,28 @@ if (!$conn) {
     exit;
 }
 
-// Consulta para métodos de pago, incluyendo el nombre del estado
-$sql = '
-    SELECT m.ID_METODO_PAGO, m.NOMBRE AS NOMBRE_METODO, m.DESCRIPCION, e.NOMBRE AS NOMBRE_ESTADO
-    FROM FIDE_METODO_PAGO_TB m
-    LEFT JOIN FIDE_ESTADO_TB e ON m.ID_ESTADO = e.ID_ESTADO
-';
+// Preparar la llamada al procedimiento almacenado
+$stid = oci_parse($conn, 'BEGIN FIDE_METODO_PAGO_TB_OBTENER_METODO_PAGO_SP(:p_cursor); END;');
 
-$stid = oci_parse($conn, $sql);
+// Crear y asociar el cursor de salida
+$cursor = oci_new_cursor($conn);
+oci_bind_by_name($stid, ':p_cursor', $cursor, -1, OCI_B_CURSOR);
 
-if (!$stid) {
-    $e = oci_error($conn);
-    echo "Error al preparar la consulta: " . $e['message'];
-    exit;
-}
-
+// Ejecutar el procedimiento almacenado
 $success = oci_execute($stid);
 
 if (!$success) {
     $e = oci_error($stid);
-    echo "Error al ejecutar la consulta: " . $e['message'];
+    echo "Error al ejecutar el procedimiento almacenado: " . $e['message'];
+    exit;
+}
+
+// Ejecutar el cursor para obtener los resultados
+$success = oci_execute($cursor);
+
+if (!$success) {
+    $e = oci_error($cursor);
+    echo "Error al ejecutar el cursor: " . $e['message'];
     exit;
 }
 ?>
@@ -53,13 +55,13 @@ if (!$success) {
                 <h1>Movie Club</h1>
             </a>
         </header>
-        
+
         <!-- Main Content -->
         <section class="options_area">
             <div class="container mt-5">
                 <h1 style="color: #333">Métodos de Pago</h1>
-                <a href="agregar_metodo_pago.php" class="button">Agregar Nuevo Método de Pago</a>
-                <table class="table table-striped">
+                <a href="agregar_metodo_pago.php" class="button" style="background-color: #013e6a; color: white;">Agregar Nuevo Método de Pago</a>
+                <table class="table table-striped mt-3">
                     <thead>
                         <tr>
                             <th>ID Método de Pago</th>
@@ -70,10 +72,10 @@ if (!$success) {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($row = oci_fetch_assoc($stid)): ?>
+                        <?php while ($row = oci_fetch_assoc($cursor)): ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($row['ID_METODO_PAGO'], ENT_QUOTES); ?></td>
-                                <td><?php echo htmlspecialchars($row['NOMBRE_METODO'], ENT_QUOTES); ?></td>
+                                <td><?php echo htmlspecialchars($row['NOMBRE'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['DESCRIPCION'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['NOMBRE_ESTADO'], ENT_QUOTES); ?></td>
                                 <td>
@@ -97,6 +99,7 @@ if (!$success) {
 
     <?php
     oci_free_statement($stid);
+    oci_free_statement($cursor);
     oci_close($conn);
     ?>
 </body>

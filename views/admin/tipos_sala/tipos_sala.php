@@ -2,14 +2,18 @@
 include '../../../includes/database.php';
 
 if (!$conn) {
-    echo "No se pudo conectar a la base de datos.";
-    exit;
+    die("Conexión fallida: " . htmlentities(oci_error()['message'], ENT_QUOTES));
 }
 
-$sql = 'SELECT * FROM FIDE_TIPO_SALA_TB';
-$stid = oci_parse($conn, $sql);
+// Llamar al procedimiento almacenado
+$stid = oci_parse($conn, 'BEGIN FIDE_TIPO_SALA_TB_OBTENER_TIPO_SALA_SP(:p_cursor); END;');
+
+// Crear y asociar el cursor de salida
+$cursor = oci_new_cursor($conn);
+oci_bind_by_name($stid, ':p_cursor', $cursor, -1, OCI_B_CURSOR);
 
 oci_execute($stid);
+oci_execute($cursor);
 ?>
 
 <!DOCTYPE html>
@@ -51,13 +55,13 @@ oci_execute($stid);
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($row = oci_fetch_assoc($stid)): ?>
+                        <?php while ($row = oci_fetch_assoc($cursor)): ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($row['ID_TIPO_SALA'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['NOMBRE'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['DESCRIPCION'], ENT_QUOTES); ?></td>
                                 <td>
-                                    <a href="editar_tipo_sala.php?id=<?php echo htmlspecialchars($row['ID_TIPO_SALA'], ENT_QUOTES); ?>" class="btn"  style="background-color: #013e6a; color: white;" >Editar</a>
+                                    <a href="editar_tipo_sala.php?id=<?php echo htmlspecialchars($row['ID_TIPO_SALA'], ENT_QUOTES); ?>" class="btn" style="background-color: #013e6a; color: white;">Editar</a>
                                     <a href="eliminar_tipo_sala.php?id=<?php echo htmlspecialchars($row['ID_TIPO_SALA'], ENT_QUOTES); ?>" class="btn" style="background-color: #e74c3c; color: white;">Eliminar</a>
                                 </td>
                             </tr>
@@ -77,6 +81,7 @@ oci_execute($stid);
 
     <?php
     oci_free_statement($stid);
+    oci_free_statement($cursor);
     oci_close($conn);
     ?>
 </body>

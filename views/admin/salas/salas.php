@@ -2,31 +2,30 @@
 include '../../../includes/database.php';
 
 if (!$conn) {
-    echo "No se pudo conectar a la base de datos.";
-    exit;
+    die("Conexión fallida: " . htmlentities(oci_error()['message'], ENT_QUOTES));
 }
 
-$sql = '
-    SELECT s.ID_SALA, s.NOMBRE, s.NUMERO_ASIENTOS, t.NOMBRE AS NOMBRE_TIPO_SALA, e.NOMBRE AS NOMBRE_ESTADO
-    FROM FIDE_SALAS_TB s
-    LEFT JOIN FIDE_TIPO_SALA_TB t ON s.ID_TIPO_SALA = t.ID_TIPO_SALA
-    LEFT JOIN FIDE_ESTADO_TB e ON s.ID_ESTADO = e.ID_ESTADO
-';
+// Preparar la llamada al procedimiento almacenado
+$stid = oci_parse($conn, 'BEGIN FIDE_SALAS_TB_OBTENER_SALAS_SP(:p_cursor); END;');
 
-$stid = oci_parse($conn, $sql);
+// Crear y asociar el cursor de salida
+$cursor = oci_new_cursor($conn);
+oci_bind_by_name($stid, ':p_cursor', $cursor, -1, OCI_B_CURSOR);
 
-if (!$stid) {
-    $e = oci_error($conn);
-    echo "Error al preparar la consulta: " . $e['message'];
-    exit;
-}
-
+// Ejecutar el procedimiento almacenado
 $success = oci_execute($stid);
 
 if (!$success) {
     $e = oci_error($stid);
-    echo "Error al ejecutar la consulta: " . $e['message'];
-    exit;
+    die("Error al ejecutar el procedimiento almacenado: " . $e['message']);
+}
+
+// Ejecutar el cursor para obtener los resultados
+$success = oci_execute($cursor);
+
+if (!$success) {
+    $e = oci_error($cursor);
+    die("Error al ejecutar el cursor: " . $e['message']);
 }
 ?>
 
@@ -59,7 +58,7 @@ if (!$success) {
             <div class="container mt-5">
                 <h1 style="color: #333">Salas</h1>
                 <a href="agregar_sala.php" class="button">Agregar Nueva Sala</a>
-                <table class="table table-striped">
+                <table class="table table-striped mt-3">
                     <thead>
                         <tr>
                             <th>ID Sala</th>
@@ -71,7 +70,7 @@ if (!$success) {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($row = oci_fetch_assoc($stid)): ?>
+                        <?php while ($row = oci_fetch_assoc($cursor)): ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($row['ID_SALA'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['NOMBRE'], ENT_QUOTES); ?></td>
@@ -99,6 +98,7 @@ if (!$success) {
 
     <?php
     oci_free_statement($stid);
+    oci_free_statement($cursor);
     oci_close($conn);
     ?>
 </body>

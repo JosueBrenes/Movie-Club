@@ -2,32 +2,30 @@
 include '../../../includes/database.php';
 
 if (!$conn) {
-    echo "No se pudo conectar a la base de datos.";
-    exit;
+    die("Conexión fallida: " . htmlentities(oci_error()['message'], ENT_QUOTES));
 }
 
-// Consulta para obtener empleados y posiciones
-$sql = '
-    SELECT e.ID_EMPLEADO, e.NOMBRE, e.APELLIDO, e.CORREO_ELECTRONICO, e.TELEFONO, 
-           p.NOMBRE AS NOMBRE_POSICION
-    FROM FIDE_EMPLEADOS_TB e
-    LEFT JOIN FIDE_POSICION_TB p ON e.ID_POSICION = p.ID_POSICION
-';
+// Preparar la llamada al procedimiento almacenado
+$stid = oci_parse($conn, 'BEGIN FIDE_EMPLEADOS_TB_OBTENER_EMPLEADOS_SP(:p_cursor); END;');
 
-$stid = oci_parse($conn, $sql);
+// Crear y asociar el cursor de salida
+$cursor = oci_new_cursor($conn);
+oci_bind_by_name($stid, ':p_cursor', $cursor, -1, OCI_B_CURSOR);
 
-if (!$stid) {
-    $e = oci_error($conn);
-    echo "Error al preparar la consulta: " . $e['message'];
-    exit;
-}
-
+// Ejecutar el procedimiento almacenado
 $success = oci_execute($stid);
 
 if (!$success) {
     $e = oci_error($stid);
-    echo "Error al ejecutar la consulta: " . $e['message'];
-    exit;
+    die("Error al ejecutar el procedimiento almacenado: " . $e['message']);
+}
+
+// Ejecutar el cursor para obtener los resultados
+$success = oci_execute($cursor);
+
+if (!$success) {
+    $e = oci_error($cursor);
+    die("Error al ejecutar el cursor: " . $e['message']);
 }
 ?>
 
@@ -60,7 +58,7 @@ if (!$success) {
             <div class="container mt-5">
                 <h1 style="color: #333">Empleados</h1>
                 <a href="agregar_empleado.php" class="button">Agregar Nuevo Empleado</a>
-                <table class="table table-striped">
+                <table class="table table-striped mt-3">
                     <thead>
                         <tr>
                             <th>ID Empleado</th>
@@ -73,7 +71,7 @@ if (!$success) {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($row = oci_fetch_assoc($stid)): ?>
+                        <?php while ($row = oci_fetch_assoc($cursor)): ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($row['ID_EMPLEADO'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['NOMBRE'], ENT_QUOTES); ?></td>
@@ -102,6 +100,7 @@ if (!$success) {
 
     <?php
     oci_free_statement($stid);
+    oci_free_statement($cursor);
     oci_close($conn);
     ?>
 </body>

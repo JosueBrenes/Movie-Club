@@ -2,35 +2,30 @@
 include '../../../includes/database.php';
 
 if (!$conn) {
-    echo "No se pudo conectar a la base de datos.";
-    exit;
+    die("Conexión fallida: " . htmlentities(oci_error()['message'], ENT_QUOTES));
 }
 
-$sql = '
-    SELECT p.ID_PELICULA, p.NOMBRE, p.ID_GENERO, p.ID_DIRECTOR, p.DESCRIPCION, 
-           i.NOMBRE AS NOMBRE_IDIOMA, e.NOMBRE AS NOMBRE_ESTADO,
-           g.NOMBRE AS NOMBRE_GENERO, d.NOMBRE AS NOMBRE_DIRECTOR
-    FROM FIDE_PELICULAS_TB p
-    LEFT JOIN FIDE_IDIOMAS_TB i ON p.ID_IDIOMAS = i.ID_IDIOMAS
-    LEFT JOIN FIDE_ESTADO_TB e ON p.ID_ESTADO = e.ID_ESTADO
-    LEFT JOIN FIDE_GENERO_TB g ON p.ID_GENERO = g.ID_GENERO
-    LEFT JOIN FIDE_DIRECTOR_TB d ON p.ID_DIRECTOR = d.ID_DIRECTOR
-';
+// Preparar la llamada al procedimiento almacenado
+$stid = oci_parse($conn, 'BEGIN FIDE_PELICULAS_TB_OBTENER_PELICULAS_SP(:p_cursor); END;');
 
-$stid = oci_parse($conn, $sql);
+// Crear y asociar el cursor de salida
+$cursor = oci_new_cursor($conn);
+oci_bind_by_name($stid, ':p_cursor', $cursor, -1, OCI_B_CURSOR);
 
-if (!$stid) {
-    $e = oci_error($conn);
-    echo "Error al preparar la consulta: " . $e['message'];
-    exit;
-}
-
+// Ejecutar el procedimiento almacenado
 $success = oci_execute($stid);
 
 if (!$success) {
     $e = oci_error($stid);
-    echo "Error al ejecutar la consulta: " . $e['message'];
-    exit;
+    die("Error al ejecutar el procedimiento almacenado: " . $e['message']);
+}
+
+// Ejecutar el cursor para obtener los resultados
+$success = oci_execute($cursor);
+
+if (!$success) {
+    $e = oci_error($cursor);
+    die("Error al ejecutar el cursor: " . $e['message']);
 }
 ?>
 
@@ -63,7 +58,7 @@ if (!$success) {
             <div class="container mt-5">
                 <h1 style="color: #333">Películas</h1>
                 <a href="agregar_pelicula.php" class="button">Agregar Nueva Película</a>
-                <table class="table table-striped">
+                <table class="table table-striped mt-3">
                     <thead>
                         <tr>
                             <th>ID Película</th>
@@ -77,7 +72,7 @@ if (!$success) {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($row = oci_fetch_assoc($stid)): ?>
+                        <?php while ($row = oci_fetch_assoc($cursor)): ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($row['ID_PELICULA'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['NOMBRE'], ENT_QUOTES); ?></td>
@@ -107,6 +102,7 @@ if (!$success) {
 
     <?php
     oci_free_statement($stid);
+    oci_free_statement($cursor);
     oci_close($conn);
     ?>
 </body>

@@ -2,26 +2,28 @@
 include '../../../includes/database.php';
 
 if (!$conn) {
-    echo "No se pudo conectar a la base de datos.";
-    exit;
+    die("Conexión fallida: " . htmlentities(oci_error()['message'], ENT_QUOTES));
 }
 
-$sql = 'SELECT * FROM FIDE_GENERO_TB';
+// Llamar al procedimiento almacenado
+$stid = oci_parse($conn, 'BEGIN FIDE_GENERO_TB_OBTENER_GENERO_SP(:p_cursor); END;');
 
-$stid = oci_parse($conn, $sql);
-
-if (!$stid) {
-    $e = oci_error($conn);
-    echo "Error al preparar la consulta: " . $e['message'];
-    exit;
-}
+// Crear y asociar el cursor de salida
+$cursor = oci_new_cursor($conn);
+oci_bind_by_name($stid, ':p_cursor', $cursor, -1, OCI_B_CURSOR);
 
 $success = oci_execute($stid);
 
 if (!$success) {
     $e = oci_error($stid);
-    echo "Error al ejecutar la consulta: " . $e['message'];
-    exit;
+    die("Error al ejecutar el procedimiento almacenado: " . $e['message']);
+}
+
+$success = oci_execute($cursor);
+
+if (!$success) {
+    $e = oci_error($cursor);
+    die("Error al ejecutar el cursor: " . $e['message']);
 }
 ?>
 
@@ -64,7 +66,7 @@ if (!$success) {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($row = oci_fetch_assoc($stid)): ?>
+                        <?php while ($row = oci_fetch_assoc($cursor)): ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($row['ID_GENERO'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['NOMBRE'], ENT_QUOTES); ?></td>
@@ -90,6 +92,7 @@ if (!$success) {
 
     <?php
     oci_free_statement($stid);
+    oci_free_statement($cursor);
     oci_close($conn);
     ?>
 </body>
