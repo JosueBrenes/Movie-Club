@@ -11,17 +11,44 @@ if (!isset($_GET['id_director']) || empty($_GET['id_director'])) {
 
 $id_director = $_GET['id_director'];
 
-$sql = 'SELECT * FROM FIDE_DIRECTOR_TB WHERE ID_DIRECTOR = :id_director';
-$stid = oci_parse($conn, $sql);
-oci_bind_by_name($stid, ':id_director', $id_director);
-oci_execute($stid);
-$director = oci_fetch_assoc($stid);
+// Preparar la llamada al procedimiento almacenado
+$stid = oci_parse($conn, 'BEGIN FIDE_DIRECTOR_TB_OBTENER_DIRECTOR_SP(:p_cursor); END;');
+
+// Crear y asociar el cursor de salida
+$cursor = oci_new_cursor($conn);
+oci_bind_by_name($stid, ':p_cursor', $cursor, -1, OCI_B_CURSOR);
+
+// Ejecutar el procedimiento almacenado
+$success = oci_execute($stid);
+
+if (!$success) {
+    $e = oci_error($stid);
+    die("Error al ejecutar el procedimiento almacenado: " . $e['message']);
+}
+
+// Ejecutar el cursor para obtener los resultados
+$success = oci_execute($cursor);
+
+if (!$success) {
+    $e = oci_error($cursor);
+    die("Error al ejecutar el cursor: " . $e['message']);
+}
+
+// Buscar el director en el cursor
+$director = null;
+while (($row = oci_fetch_assoc($cursor)) !== false) {
+    if ($row['ID_DIRECTOR'] == $id_director) {
+        $director = $row;
+        break;
+    }
+}
 
 if (!$director) {
     die("No se encontró el director.");
 }
 
 oci_free_statement($stid);
+oci_free_statement($cursor);
 oci_close($conn);
 ?>
 
@@ -39,7 +66,7 @@ oci_close($conn);
 <body>
     <!-- Sidebar -->
     <?php include '../../templates/sidebar.php'; ?>
-
+    
     <!-- Content -->
     <div class="content">
         <!-- Header -->
@@ -60,8 +87,8 @@ oci_close($conn);
                         <input type="text" id="nombre" name="nombre" class="form-control" value="<?php echo htmlspecialchars($director['NOMBRE'] ?? '', ENT_QUOTES); ?>" required>
                     </div>
                     <div class="form-group">
-                        <label for="nacionalidad">Nacionalidad</label>
-                        <input type="text" id="nacionalidad" name="nacionalidad" class="form-control" value="<?php echo htmlspecialchars($director['NACIONALIDAD'] ?? '', ENT_QUOTES); ?>">
+                        <label for="apellido">Apellido</label>
+                        <input type="text" id="apellido" name="apellido" class="form-control" value="<?php echo htmlspecialchars($director['APELLIDO'] ?? '', ENT_QUOTES); ?>" required>
                     </div>
                     <button type="submit" class="btn" style="background-color: #013e6a; color: white; margin-bottom: 2rem;">Actualizar Director</button>
                 </form>
@@ -70,9 +97,7 @@ oci_close($conn);
 
         <!-- Footer -->
         <footer class="footer_area">
-            <p class="footer_text">
-                &copy; 2024 Movie Club. Todos los derechos reservados.
-            </p>
+            <p class="footer_text">&copy; 2024 Movie Club. Todos los derechos reservados.</p>
         </footer>
     </div>
 </body>

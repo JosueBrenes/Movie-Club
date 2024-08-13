@@ -78,7 +78,7 @@ if (!$success) {
                                 <td><?php echo htmlspecialchars($row['APELLIDO'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['CORREO_ELECTRONICO'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['TELEFONO'], ENT_QUOTES); ?></td>
-                                <td><?php echo htmlspecialchars($row['NOMBRE_POSICION'], ENT_QUOTES); ?></td>
+                                <td><?php echo htmlspecialchars($row['ID_POSICION'], ENT_QUOTES); ?></td>
                                 <td>
                                     <a href="editar_empleado.php?id=<?php echo htmlspecialchars($row['ID_EMPLEADO'], ENT_QUOTES); ?>" class="btn" style="background-color: #013e6a; color: white;">Editar</a>
                                     <a href="eliminar_empleado.php?id=<?php echo htmlspecialchars($row['ID_EMPLEADO'], ENT_QUOTES); ?>" class="btn btn-danger" style="background-color: #d9534f; color: white;">Eliminar</a>

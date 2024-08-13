@@ -11,17 +11,44 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 
 $cliente_id = $_GET['id'];
 
-$sql = 'SELECT * FROM FIDE_CLIENTES_TB WHERE ID_CLIENTE = :cliente_id';
-$stid = oci_parse($conn, $sql);
-oci_bind_by_name($stid, ':cliente_id', $cliente_id);
-oci_execute($stid);
-$cliente = oci_fetch_assoc($stid);
+// Preparar la llamada al procedimiento almacenado
+$stid = oci_parse($conn, 'BEGIN FIDE_CLIENTES_TB_OBTENER_CLIENTES_SP(:p_cursor); END;');
+
+// Crear y asociar el cursor de salida
+$cursor = oci_new_cursor($conn);
+oci_bind_by_name($stid, ':p_cursor', $cursor, -1, OCI_B_CURSOR);
+
+// Ejecutar el procedimiento almacenado
+$success = oci_execute($stid);
+
+if (!$success) {
+    $e = oci_error($stid);
+    die("Error al ejecutar el procedimiento almacenado: " . $e['message']);
+}
+
+// Ejecutar el cursor para obtener los resultados
+$success = oci_execute($cursor);
+
+if (!$success) {
+    $e = oci_error($cursor);
+    die("Error al ejecutar el cursor: " . $e['message']);
+}
+
+// Buscar el cliente en el cursor
+$cliente = null;
+while (($row = oci_fetch_assoc($cursor)) != false) {
+    if ($row['ID_CLIENTE'] == $cliente_id) {
+        $cliente = $row;
+        break;
+    }
+}
 
 if (!$cliente) {
     die("No se encontró el cliente.");
 }
 
 oci_free_statement($stid);
+oci_free_statement($cursor);
 oci_close($conn);
 
 ?>
