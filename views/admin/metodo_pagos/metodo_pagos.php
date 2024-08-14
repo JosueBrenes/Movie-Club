@@ -6,30 +6,50 @@ if (!$conn) {
     exit;
 }
 
-// Preparar la llamada al procedimiento almacenado
+// Preparar y ejecutar la llamada al procedimiento almacenado para obtener métodos de pago
 $stid = oci_parse($conn, 'BEGIN FIDE_METODO_PAGO_TB_OBTENER_METODO_PAGO_SP(:p_cursor); END;');
-
-// Crear y asociar el cursor de salida
 $cursor = oci_new_cursor($conn);
 oci_bind_by_name($stid, ':p_cursor', $cursor, -1, OCI_B_CURSOR);
-
-// Ejecutar el procedimiento almacenado
 $success = oci_execute($stid);
-
 if (!$success) {
     $e = oci_error($stid);
     echo "Error al ejecutar el procedimiento almacenado: " . $e['message'];
     exit;
 }
-
-// Ejecutar el cursor para obtener los resultados
 $success = oci_execute($cursor);
-
 if (!$success) {
     $e = oci_error($cursor);
     echo "Error al ejecutar el cursor: " . $e['message'];
     exit;
 }
+
+// Preparar y ejecutar la llamada al procedimiento almacenado para obtener estados
+$stid_estado = oci_parse($conn, 'BEGIN FIDE_ESTADO_TB_OBTENER_ESTADO_SP(:p_cursor); END;');
+$cursor_estado = oci_new_cursor($conn);
+oci_bind_by_name($stid_estado, ':p_cursor', $cursor_estado, -1, OCI_B_CURSOR);
+$success_estado = oci_execute($stid_estado);
+if (!$success_estado) {
+    $e = oci_error($stid_estado);
+    echo "Error al ejecutar el procedimiento almacenado de estados: " . $e['message'];
+    exit;
+}
+$success_estado = oci_execute($cursor_estado);
+if (!$success_estado) {
+    $e = oci_error($cursor_estado);
+    echo "Error al ejecutar el cursor de estados: " . $e['message'];
+    exit;
+}
+
+// Almacenar los datos de estados en un array
+$estados_data = [];
+while ($row_estado = oci_fetch_assoc($cursor_estado)) {
+    $estados_data[$row_estado['ID_ESTADO']] = $row_estado['NOMBRE'];
+}
+
+oci_free_statement($stid_estado);
+oci_free_statement($cursor_estado);
+
+// Mostrar los métodos de pago
 ?>
 
 <!DOCTYPE html>
@@ -77,7 +97,7 @@ if (!$success) {
                                 <td><?php echo htmlspecialchars($row['ID_METODO_PAGO'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['NOMBRE'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['DESCRIPCION'], ENT_QUOTES); ?></td>
-                                <td><?php echo htmlspecialchars($row['NOMBRE_ESTADO'], ENT_QUOTES); ?></td>
+                                <td><?php echo htmlspecialchars($estados_data[$row['ID_ESTADO']] ?? 'Desconocido', ENT_QUOTES); ?></td>
                                 <td>
                                     <a href="editar_metodo_pago.php?id=<?php echo htmlspecialchars($row['ID_METODO_PAGO'], ENT_QUOTES); ?>" class="btn" style="background-color: #013e6a; color: white;">Editar</a>
                                     <a href="eliminar_metodo_pago.php?id=<?php echo htmlspecialchars($row['ID_METODO_PAGO'], ENT_QUOTES); ?>" class="btn btn-danger" style="background-color: #d9534f; color: white;">Eliminar</a>

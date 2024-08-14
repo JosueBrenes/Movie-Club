@@ -12,23 +12,28 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 
 $id_empleado = $_GET['id'];
 
-// Consulta para obtener la información del empleado
-$sql = 'SELECT e.ID_EMPLEADO, e.NOMBRE, e.APELLIDO, e.CORREO_ELECTRONICO, e.TELEFONO, e.ID_POSICION, p.NOMBRE AS NOMBRE_POSICION
-        FROM FIDE_EMPLEADOS_TB e
-        LEFT JOIN FIDE_POSICION_TB p ON e.ID_POSICION = p.ID_POSICION
-        WHERE e.ID_EMPLEADO = :id_empleado';
-$stid = oci_parse($conn, $sql);
-oci_bind_by_name($stid, ':id_empleado', $id_empleado);
+// Llamada al procedimiento almacenado para obtener el empleado
+$stid = oci_parse($conn, 'BEGIN FIDE_EMPLEADOS_TB_OBTENER_EMPLEADOS_SP(:p_cursor); END;');
+$cursor = oci_new_cursor($conn);
+oci_bind_by_name($stid, ':p_cursor', $cursor, -1, OCI_B_CURSOR);
 oci_execute($stid);
-$empleado = oci_fetch_assoc($stid);
+oci_execute($cursor);
+
+$empleado = null;
+while (($row = oci_fetch_assoc($cursor)) !== false) {
+    if ($row['ID_EMPLEADO'] == $id_empleado) {
+        $empleado = $row;
+        break;
+    }
+}
+
+oci_free_statement($stid);
+oci_free_statement($cursor);
+oci_close($conn);
 
 if (!$empleado) {
     die("No se encontró el empleado.");
 }
-
-// Cierre de recursos
-oci_free_statement($stid);
-oci_close($conn);
 ?>
 
 <!DOCTYPE html>
@@ -78,20 +83,23 @@ oci_close($conn);
                         <input type="text" id="telefono" name="telefono" class="form-control" value="<?php echo htmlspecialchars($empleado['TELEFONO'], ENT_QUOTES); ?>">
                     </div>
                     <div class="form-group">
-                        <label for="id_posicion">Posición</label>
+                        <label for="id_posicion">Puesto</label>
                         <select id="id_posicion" name="id_posicion" class="form-control" required>
                             <?php
                             include '../../../includes/database.php'; 
-                            $sql_posiciones = 'SELECT * FROM FIDE_POSICION_TB';
-                            $stid_posiciones = oci_parse($conn, $sql_posiciones);
+                            $stid_posiciones = oci_parse($conn, 'BEGIN FIDE_POSICION_TB_OBTENER_POSICIONES_SP(:p_cursor); END;');
+                            $cursor_posiciones = oci_new_cursor($conn);
+                            oci_bind_by_name($stid_posiciones, ':p_cursor', $cursor_posiciones, -1, OCI_B_CURSOR);
                             oci_execute($stid_posiciones);
+                            oci_execute($cursor_posiciones);
 
-                            while ($posicion = oci_fetch_assoc($stid_posiciones)) {
+                            while ($posicion = oci_fetch_assoc($cursor_posiciones)) {
                                 $selected = ($posicion['ID_POSICION'] == $empleado['ID_POSICION']) ? 'selected' : '';
                                 echo "<option value=\"{$posicion['ID_POSICION']}\" $selected>{$posicion['NOMBRE']}</option>";
                             }
 
                             oci_free_statement($stid_posiciones);
+                            oci_free_statement($cursor_posiciones);
                             ?>
                         </select>
                     </div>

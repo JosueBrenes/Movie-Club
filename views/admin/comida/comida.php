@@ -6,30 +6,65 @@ if (!$conn) {
     exit;
 }
 
-// Preparar la llamada al procedimiento almacenado
-$stid = oci_parse($conn, 'BEGIN FIDE_COMIDA_TB_OBTENER_COMIDA_SP(:p_cursor); END;');
+// Preparar la llamada al procedimiento almacenado para obtener los datos de comida
+$stid_comida = oci_parse($conn, 'BEGIN FIDE_COMIDA_TB_OBTENER_COMIDA_SP(:p_cursor); END;');
 
 // Crear y asociar el cursor de salida
-$cursor = oci_new_cursor($conn);
-oci_bind_by_name($stid, ':p_cursor', $cursor, -1, OCI_B_CURSOR);
+$cursor_comida = oci_new_cursor($conn);
+oci_bind_by_name($stid_comida, ':p_cursor', $cursor_comida, -1, OCI_B_CURSOR);
 
-// Ejecutar el procedimiento almacenado
-$success = oci_execute($stid);
+// Ejecutar el procedimiento almacenado para obtener los datos de comida
+$success_comida = oci_execute($stid_comida);
 
-if (!$success) {
-    $e = oci_error($stid);
-    echo "Error al ejecutar el procedimiento almacenado: " . $e['message'];
+if (!$success_comida) {
+    $e = oci_error($stid_comida);
+    echo "Error al ejecutar el procedimiento almacenado de comida: " . $e['message'];
     exit;
 }
 
-// Ejecutar el cursor para obtener los resultados
-$success = oci_execute($cursor);
+// Ejecutar el cursor para obtener los resultados de comida
+$success_comida = oci_execute($cursor_comida);
 
-if (!$success) {
-    $e = oci_error($cursor);
-    echo "Error al ejecutar el cursor: " . $e['message'];
+if (!$success_comida) {
+    $e = oci_error($cursor_comida);
+    echo "Error al ejecutar el cursor de comida: " . $e['message'];
     exit;
 }
+
+// Preparar la llamada al procedimiento almacenado para obtener los datos de inventario
+$stid_inventario = oci_parse($conn, 'BEGIN FIDE_INVENTARIO_TB_OBTENER_INVENTARIO_SP(:p_cursor); END;');
+
+// Crear y asociar el cursor de salida
+$cursor_inventario = oci_new_cursor($conn);
+oci_bind_by_name($stid_inventario, ':p_cursor', $cursor_inventario, -1, OCI_B_CURSOR);
+
+// Ejecutar el procedimiento almacenado para obtener los datos de inventario
+$success_inventario = oci_execute($stid_inventario);
+
+if (!$success_inventario) {
+    $e = oci_error($stid_inventario);
+    echo "Error al ejecutar el procedimiento almacenado de inventario: " . $e['message'];
+    exit;
+}
+
+// Ejecutar el cursor para obtener los resultados de inventario
+$success_inventario = oci_execute($cursor_inventario);
+
+if (!$success_inventario) {
+    $e = oci_error($cursor_inventario);
+    echo "Error al ejecutar el cursor de inventario: " . $e['message'];
+    exit;
+}
+
+// Almacenar los datos de inventario en un array
+$inventario_data = [];
+while ($row_inventario = oci_fetch_assoc($cursor_inventario)) {
+    $inventario_data[$row_inventario['ID_INVENTARIO']] = $row_inventario['NOMBRE'];
+}
+
+oci_free_statement($stid_inventario);
+oci_free_statement($cursor_inventario);
+oci_close($conn);
 ?>
 
 <!DOCTYPE html>
@@ -64,21 +99,21 @@ if (!$success) {
                 <table class="table table-striped mt-3">
                     <thead>
                         <tr>
-                            <th>ID Comida</th>
-                            <th>ID Inventario</th>
+                            <th>Comida</th>
+                            <th>Inventario</th>
                             <th>Precio</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($row = oci_fetch_assoc($cursor)): ?>
+                        <?php while ($row_comida = oci_fetch_assoc($cursor_comida)): ?>
                             <tr>
-                                <td><?php echo htmlspecialchars($row['ID_COMIDA'], ENT_QUOTES); ?></td>
-                                <td><?php echo htmlspecialchars($row['ID_INVENTARIO'], ENT_QUOTES); ?></td>
-                                <td><?php echo htmlspecialchars($row['PRECIO'], ENT_QUOTES); ?></td>
+                                <td><?php echo htmlspecialchars($row_comida['ID_COMIDA'], ENT_QUOTES); ?></td>
+                                <td><?php echo htmlspecialchars($inventario_data[$row_comida['ID_INVENTARIO']] ?? 'Desconocido', ENT_QUOTES); ?></td>
+                                <td><?php echo htmlspecialchars($row_comida['PRECIO'], ENT_QUOTES); ?></td>
                                 <td>
-                                    <a href="editar_comida.php?id=<?php echo htmlspecialchars($row['ID_COMIDA'], ENT_QUOTES); ?>" class="btn" style="background-color: #013e6a; color: white;">Editar</a>
-                                    <a href="eliminar_comida.php?id=<?php echo htmlspecialchars($row['ID_COMIDA'], ENT_QUOTES); ?>" class="btn btn-danger" style="background-color: #d9534f; color: white;" onclick="return confirm('¿Estás seguro de que deseas eliminar esta comida?');">Eliminar</a>
+                                    <a href="editar_comida.php?id=<?php echo htmlspecialchars($row_comida['ID_COMIDA'], ENT_QUOTES); ?>" class="btn" style="background-color: #013e6a; color: white;">Editar</a>
+                                    <a href="eliminar_comida.php?id=<?php echo htmlspecialchars($row_comida['ID_COMIDA'], ENT_QUOTES); ?>" class="btn btn-danger" style="background-color: #d9534f; color: white;" onclick="return confirm('¿Estás seguro de que deseas eliminar esta comida?');">Eliminar</a>
                                 </td>
                             </tr>
                         <?php endwhile; ?>
@@ -96,8 +131,8 @@ if (!$success) {
     </div>
 
     <?php
-    oci_free_statement($stid);
-    oci_free_statement($cursor);
+    oci_free_statement($stid_comida);
+    oci_free_statement($cursor_comida);
     oci_close($conn);
     ?>
 </body>

@@ -135,7 +135,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
                     <div class="form-group">
                         <label for="cantidad_asientos">Cantidad de Asientos</label>
-                        <input type="number" id="cantidad_asientos" name="cantidad_asientos" class="form-control" required>
+                        <input type="number" id="cantidad_asientos" name="cantidad_asientos" class="form-control" max="10" min="1" required>
                     </div>
                     <button type="submit" class="btn btn-danger">Reservar</button>
                 </form>

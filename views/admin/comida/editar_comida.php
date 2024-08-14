@@ -66,7 +66,7 @@ oci_close($conn);
                 <form action="actualizar_comida.php" method="POST">
                     <input type="hidden" name="id_comida" value="<?php echo htmlspecialchars($comida['ID_COMIDA'] ?? '', ENT_QUOTES); ?>">
                     <div class="form-group">
-                        <label for="id_inventario">ID Inventario</label>
+                        <label for="id_inventario">Inventario</label>
                         <select id="id_inventario" name="id_inventario" class="form-control" required>
                             <option value="">Seleccione un inventario</option>
                             <?php foreach ($inventarios as $inventario): ?>

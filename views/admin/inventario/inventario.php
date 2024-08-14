@@ -5,28 +5,46 @@ if (!$conn) {
     die("Conexión fallida: " . htmlentities(oci_error()['message'], ENT_QUOTES));
 }
 
-// Preparar la llamada al procedimiento almacenado
-$stid = oci_parse($conn, 'BEGIN FIDE_INVENTARIO_TB_OBTENER_INVENTARIO_SP(:p_cursor); END;');
-
-// Crear y asociar el cursor de salida
-$cursor = oci_new_cursor($conn);
-oci_bind_by_name($stid, ':p_cursor', $cursor, -1, OCI_B_CURSOR);
-
-// Ejecutar el procedimiento almacenado
-$success = oci_execute($stid);
-
-if (!$success) {
-    $e = oci_error($stid);
-    die("Error al ejecutar el procedimiento almacenado: " . $e['message']);
+// Preparar y ejecutar la llamada al procedimiento almacenado para obtener inventario
+$stid_inventario = oci_parse($conn, 'BEGIN FIDE_INVENTARIO_TB_OBTENER_INVENTARIO_SP(:p_cursor); END;');
+$cursor_inventario = oci_new_cursor($conn);
+oci_bind_by_name($stid_inventario, ':p_cursor', $cursor_inventario, -1, OCI_B_CURSOR);
+$success_inventario = oci_execute($stid_inventario);
+if (!$success_inventario) {
+    $e = oci_error($stid_inventario);
+    die("Error al ejecutar el procedimiento almacenado de inventario: " . $e['message']);
+}
+$success_inventario = oci_execute($cursor_inventario);
+if (!$success_inventario) {
+    $e = oci_error($cursor_inventario);
+    die("Error al ejecutar el cursor de inventario: " . $e['message']);
 }
 
-// Ejecutar el cursor para obtener los resultados
-$success = oci_execute($cursor);
-
-if (!$success) {
-    $e = oci_error($cursor);
-    die("Error al ejecutar el cursor: " . $e['message']);
+// Preparar y ejecutar la llamada al procedimiento almacenado para obtener proveedores
+$stid_proveedores = oci_parse($conn, 'BEGIN FIDE_PROVEEDORES_TB_OBTENER_PROVEEDORES_SP(:p_cursor); END;');
+$cursor_proveedores = oci_new_cursor($conn);
+oci_bind_by_name($stid_proveedores, ':p_cursor', $cursor_proveedores, -1, OCI_B_CURSOR);
+$success_proveedores = oci_execute($stid_proveedores);
+if (!$success_proveedores) {
+    $e = oci_error($stid_proveedores);
+    die("Error al ejecutar el procedimiento almacenado de proveedores: " . $e['message']);
 }
+$success_proveedores = oci_execute($cursor_proveedores);
+if (!$success_proveedores) {
+    $e = oci_error($cursor_proveedores);
+    die("Error al ejecutar el cursor de proveedores: " . $e['message']);
+}
+
+// Almacenar los datos de proveedores en un array
+$proveedores_data = [];
+while ($row_proveedor = oci_fetch_assoc($cursor_proveedores)) {
+    $proveedores_data[$row_proveedor['ID_PROVEEDOR']] = $row_proveedor['NOMBRE'];
+}
+
+oci_free_statement($stid_proveedores);
+oci_free_statement($cursor_proveedores);
+
+// Mostrar el inventario
 ?>
 
 <!DOCTYPE html>
@@ -57,7 +75,7 @@ if (!$success) {
         <section class="options_area">
             <div class="container mt-5">
                 <h1 style="color: #333">Inventario</h1>
-                <a href="agregar_inventario.php" class="button">Agregar Nuevo Inventario</a>
+                <a href="agregar_inventario.php" class="button" style="background-color: #013e6a; color: white;">Agregar Nuevo Inventario</a>
                 <table class="table table-striped mt-3">
                     <thead>
                         <tr>
@@ -65,18 +83,18 @@ if (!$success) {
                             <th>Nombre</th>
                             <th>Descripción</th>
                             <th>Cantidad</th>
-                            <th>ID Proveedor</th>
+                            <th>Proveedor</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($row = oci_fetch_assoc($cursor)): ?>
+                        <?php while ($row = oci_fetch_assoc($cursor_inventario)): ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($row['ID_INVENTARIO'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['NOMBRE'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['DESCRIPCION'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['CANTIDAD'], ENT_QUOTES); ?></td>
-                                <td><?php echo htmlspecialchars($row['ID_PROVEEDOR'], ENT_QUOTES); ?></td>
+                                <td><?php echo htmlspecialchars($proveedores_data[$row['ID_PROVEEDOR']] ?? 'Desconocido', ENT_QUOTES); ?></td>
                                 <td>
                                     <a href="editar_inventario.php?id=<?php echo htmlspecialchars($row['ID_INVENTARIO'], ENT_QUOTES); ?>" class="btn" style="background-color: #013e6a; color: white;">Editar</a>
                                     <a href="eliminar_inventario.php?id=<?php echo htmlspecialchars($row['ID_INVENTARIO'], ENT_QUOTES); ?>" class="btn btn-danger" onclick="return confirm('¿Estás seguro de que deseas eliminar este inventario?');">Eliminar</a>
@@ -97,8 +115,8 @@ if (!$success) {
     </div>
 
     <?php
-    oci_free_statement($stid);
-    oci_free_statement($cursor);
+    oci_free_statement($stid_inventario);
+    oci_free_statement($cursor_inventario);
     oci_close($conn);
     ?>
 </body>

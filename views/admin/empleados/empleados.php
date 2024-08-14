@@ -5,28 +5,61 @@ if (!$conn) {
     die("Conexión fallida: " . htmlentities(oci_error()['message'], ENT_QUOTES));
 }
 
-// Preparar la llamada al procedimiento almacenado
-$stid = oci_parse($conn, 'BEGIN FIDE_EMPLEADOS_TB_OBTENER_EMPLEADOS_SP(:p_cursor); END;');
+// Preparar la llamada al procedimiento almacenado para obtener los datos de empleados
+$stid_empleados = oci_parse($conn, 'BEGIN FIDE_EMPLEADOS_TB_OBTENER_EMPLEADOS_SP(:p_cursor); END;');
 
 // Crear y asociar el cursor de salida
-$cursor = oci_new_cursor($conn);
-oci_bind_by_name($stid, ':p_cursor', $cursor, -1, OCI_B_CURSOR);
+$cursor_empleados = oci_new_cursor($conn);
+oci_bind_by_name($stid_empleados, ':p_cursor', $cursor_empleados, -1, OCI_B_CURSOR);
 
-// Ejecutar el procedimiento almacenado
-$success = oci_execute($stid);
+// Ejecutar el procedimiento almacenado para obtener los datos de empleados
+$success_empleados = oci_execute($stid_empleados);
 
-if (!$success) {
-    $e = oci_error($stid);
-    die("Error al ejecutar el procedimiento almacenado: " . $e['message']);
+if (!$success_empleados) {
+    $e = oci_error($stid_empleados);
+    die("Error al ejecutar el procedimiento almacenado de empleados: " . $e['message']);
 }
 
-// Ejecutar el cursor para obtener los resultados
-$success = oci_execute($cursor);
+// Ejecutar el cursor para obtener los resultados de empleados
+$success_empleados = oci_execute($cursor_empleados);
 
-if (!$success) {
-    $e = oci_error($cursor);
-    die("Error al ejecutar el cursor: " . $e['message']);
+if (!$success_empleados) {
+    $e = oci_error($cursor_empleados);
+    die("Error al ejecutar el cursor de empleados: " . $e['message']);
 }
+
+// Preparar la llamada al procedimiento almacenado para obtener los datos de posiciones
+$stid_posiciones = oci_parse($conn, 'BEGIN FIDE_POSICION_TB_OBTENER_POSICION_SP(:p_cursor); END;');
+
+// Crear y asociar el cursor de salida
+$cursor_posiciones = oci_new_cursor($conn);
+oci_bind_by_name($stid_posiciones, ':p_cursor', $cursor_posiciones, -1, OCI_B_CURSOR);
+
+// Ejecutar el procedimiento almacenado para obtener los datos de posiciones
+$success_posiciones = oci_execute($stid_posiciones);
+
+if (!$success_posiciones) {
+    $e = oci_error($stid_posiciones);
+    die("Error al ejecutar el procedimiento almacenado de posiciones: " . $e['message']);
+}
+
+// Ejecutar el cursor para obtener los resultados de posiciones
+$success_posiciones = oci_execute($cursor_posiciones);
+
+if (!$success_posiciones) {
+    $e = oci_error($cursor_posiciones);
+    die("Error al ejecutar el cursor de posiciones: " . $e['message']);
+}
+
+// Almacenar los datos de posiciones en un array
+$posiciones_data = [];
+while ($row_posicion = oci_fetch_assoc($cursor_posiciones)) {
+    $posiciones_data[$row_posicion['ID_POSICION']] = $row_posicion['NOMBRE'];
+}
+
+oci_free_statement($stid_posiciones);
+oci_free_statement($cursor_posiciones);
+oci_close($conn);
 ?>
 
 <!DOCTYPE html>
@@ -66,19 +99,19 @@ if (!$success) {
                             <th>Apellido</th>
                             <th>Correo Electrónico</th>
                             <th>Teléfono</th>
-                            <th>Posición</th>
+                            <th>Puesto</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($row = oci_fetch_assoc($cursor)): ?>
+                        <?php while ($row = oci_fetch_assoc($cursor_empleados)): ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($row['ID_EMPLEADO'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['NOMBRE'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['APELLIDO'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['CORREO_ELECTRONICO'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['TELEFONO'], ENT_QUOTES); ?></td>
-                                <td><?php echo htmlspecialchars($row['ID_POSICION'], ENT_QUOTES); ?></td>
+                                <td><?php echo htmlspecialchars($posiciones_data[$row['ID_POSICION']] ?? 'Desconocido', ENT_QUOTES); ?></td>
                                 <td>
                                     <a href="editar_empleado.php?id=<?php echo htmlspecialchars($row['ID_EMPLEADO'], ENT_QUOTES); ?>" class="btn" style="background-color: #013e6a; color: white;">Editar</a>
                                     <a href="eliminar_empleado.php?id=<?php echo htmlspecialchars($row['ID_EMPLEADO'], ENT_QUOTES); ?>" class="btn btn-danger" style="background-color: #d9534f; color: white;">Eliminar</a>
@@ -99,8 +132,8 @@ if (!$success) {
     </div>
 
     <?php
-    oci_free_statement($stid);
-    oci_free_statement($cursor);
+    oci_free_statement($stid_empleados);
+    oci_free_statement($cursor_empleados);
     oci_close($conn);
     ?>
 </body>

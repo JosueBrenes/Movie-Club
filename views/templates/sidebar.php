@@ -12,7 +12,7 @@
     <a href="../funciones/funciones.php">Gestionar Funciones</a>
     <a href="../proovedores/proovedores.php">Gestionar Proveedores</a>
     <a href="../inventario/inventario.php">Gestionar Inventario</a>
-    <a href="../posiciones/posiciones.php">Gestionar Posiciones</a>
+    <a href="../posiciones/posiciones.php">Gestionar Puesto de Trabajo</a>
     <a href="../tipos_sala/tipos_sala.php">Gestionar Tipos de Sala</a>
     <div class="sidebar-footer">
     <a href="../../../public/index.php" class="btn btn-danger btn-logout">Salir</a>
