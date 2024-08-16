@@ -84,7 +84,7 @@ oci_free_statement($cursor_estado);
                 <table class="table table-striped mt-3">
                     <thead>
                         <tr>
-                            <th>ID Método de Pago</th>
+                            <th>ID</th>
                             <th>Nombre</th>
                             <th>Descripción</th>
                             <th>Estado</th>
@@ -100,7 +100,6 @@ oci_free_statement($cursor_estado);
                                 <td><?php echo htmlspecialchars($estados_data[$row['ID_ESTADO']] ?? 'Desconocido', ENT_QUOTES); ?></td>
                                 <td>
                                     <a href="editar_metodo_pago.php?id=<?php echo htmlspecialchars($row['ID_METODO_PAGO'], ENT_QUOTES); ?>" class="btn" style="background-color: #013e6a; color: white;">Editar</a>
-                                    <a href="eliminar_metodo_pago.php?id=<?php echo htmlspecialchars($row['ID_METODO_PAGO'], ENT_QUOTES); ?>" class="btn btn-danger" style="background-color: #d9534f; color: white;">Eliminar</a>
                                 </td>
                             </tr>
                         <?php endwhile; ?>

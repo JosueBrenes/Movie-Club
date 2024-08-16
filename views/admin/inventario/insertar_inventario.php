@@ -10,6 +10,7 @@ $nombre = $_POST['nombre'];
 $descripcion = $_POST['descripcion'];
 $cantidad = $_POST['cantidad'];
 $id_proveedor = $_POST['id_proveedor'];
+$id_estado = $_POST['id_estado'];
 
 try {
     // Obtener el siguiente valor de la secuencia para ID_INVENTARIO
@@ -21,7 +22,7 @@ try {
     oci_free_statement($stid);
 
     // Preparar la llamada al procedimiento almacenado
-    $sql = 'BEGIN FIDE_INVENTARIO_TB_INSERTAR_INVENTARIO_SP(:id_inventario, :nombre, :descripcion, :cantidad, :id_proveedor); END;';
+    $sql = 'BEGIN FIDE_INVENTARIO_TB_INSERTAR_INVENTARIO_SP(:id_inventario, :nombre, :descripcion, :cantidad, :id_proveedor, :id_estado); END;';
     $stid = oci_parse($conn, $sql);
 
     // Asociar los parámetros
@@ -30,6 +31,7 @@ try {
     oci_bind_by_name($stid, ':descripcion', $descripcion);
     oci_bind_by_name($stid, ':cantidad', $cantidad);
     oci_bind_by_name($stid, ':id_proveedor', $id_proveedor);
+    oci_bind_by_name($stid, ':id_estado', $id_estado);
 
     // Ejecutar el procedimiento
     $success = oci_execute($stid);

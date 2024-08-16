@@ -130,8 +130,6 @@ while ($row_estado = oci_fetch_assoc($cursor_estados)) {
 
 oci_free_statement($stid_estados);
 oci_free_statement($cursor_estados);
-
-// Mostrar las películas
 ?>
 
 <!DOCTYPE html>
@@ -166,7 +164,7 @@ oci_free_statement($cursor_estados);
                 <table class="table table-striped mt-3">
                     <thead>
                         <tr>
-                            <th>ID Película</th>
+                            <th>ID</th>
                             <th>Nombre</th>
                             <th>Género</th>
                             <th>Director</th>
@@ -188,7 +186,6 @@ oci_free_statement($cursor_estados);
                                 <td><?php echo htmlspecialchars($estados_data[$row_pelicula['ID_ESTADO']] ?? 'Desconocido', ENT_QUOTES); ?></td>
                                 <td>
                                     <a href="editar_pelicula.php?id=<?php echo htmlspecialchars($row_pelicula['ID_PELICULA'], ENT_QUOTES); ?>" class="btn" style="background-color: #013e6a; color: white;">Editar</a>
-                                    <a href="eliminar_pelicula.php?id=<?php echo htmlspecialchars($row_pelicula['ID_PELICULA'], ENT_QUOTES); ?>" class="btn btn-danger" style="background-color: #d9534f; color: white;">Eliminar</a>
                                 </td>
                             </tr>
                             

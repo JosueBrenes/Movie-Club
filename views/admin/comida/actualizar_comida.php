@@ -9,6 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $id_comida = $_POST['id_comida'];
     $id_inventario = $_POST['id_inventario'];
     $precio = $_POST['precio'];
+    $id_estado = $_POST['id_estado'];
 
     // Validar que los campos no estén vacíos
     if (empty($id_comida) || empty($id_inventario) || empty($precio)) {
@@ -16,13 +17,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     // Preparar la llamada al procedimiento almacenado
-    $sql = 'BEGIN FIDE_COMIDA_TB_ACTUALIZAR_COMIDA_SP(:id_comida, :id_inventario, :precio); END;';
+    $sql = 'BEGIN FIDE_COMIDA_TB_ACTUALIZAR_COMIDA_SP(:id_comida, :id_inventario, :precio, :id_estado); END;';
     $stid = oci_parse($conn, $sql);
 
     // Asignar los valores a los parámetros del procedimiento
     oci_bind_by_name($stid, ':id_comida', $id_comida);
     oci_bind_by_name($stid, ':id_inventario', $id_inventario);
     oci_bind_by_name($stid, ':precio', $precio);
+    oci_bind_by_name($stid, ':id_estado', $id_estado);
 
     // Ejecutar el procedimiento almacenado
     if (oci_execute($stid)) {

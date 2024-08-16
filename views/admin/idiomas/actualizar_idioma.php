@@ -10,6 +10,8 @@ if (!$conn) {
 $id_idiomas = isset($_POST['id_idiomas']) ? intval($_POST['id_idiomas']) : 0;
 $nombre = isset($_POST['nombre']) ? trim($_POST['nombre']) : '';
 $descripcion = isset($_POST['descripcion']) ? trim($_POST['descripcion']) : '';
+$id_estado = $_POST['id_estado'];
+
 
 if ($id_idiomas <= 0 || empty($nombre)) {
     echo "Datos inválidos.";
@@ -17,13 +19,14 @@ if ($id_idiomas <= 0 || empty($nombre)) {
 }
 
 // Preparar y ejecutar el procedimiento almacenado
-$sql = 'BEGIN FIDE_IDIOMAS_TB_ACTUALIZAR_IDIOMAS_SP(:id_idiomas, :nombre, :descripcion); END;';
+$sql = 'BEGIN FIDE_IDIOMAS_TB_ACTUALIZAR_IDIOMAS_SP(:id_idiomas, :nombre, :descripcion, :id_estado); END;';
 $stid = oci_parse($conn, $sql);
 
 // Enlazar las variables
 oci_bind_by_name($stid, ':id_idiomas', $id_idiomas);
 oci_bind_by_name($stid, ':nombre', $nombre);
 oci_bind_by_name($stid, ':descripcion', $descripcion);
+oci_bind_by_name($stid, ':id_estado', $id_estado);
 
 // Ejecutar el procedimiento almacenado
 $success = oci_execute($stid);

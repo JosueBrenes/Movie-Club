@@ -120,7 +120,6 @@ oci_free_statement($cursor_tipos);
                                 <td><?php echo htmlspecialchars($estados_data[$row['ID_ESTADO']] ?? 'Desconocido', ENT_QUOTES); ?></td>
                                 <td>
                                     <a href="editar_sala.php?id=<?php echo htmlspecialchars($row['ID_SALA'], ENT_QUOTES); ?>" class="btn" style="background-color: #013e6a; color: white;">Editar</a>
-                                    <a href="eliminar_sala.php?id=<?php echo htmlspecialchars($row['ID_SALA'], ENT_QUOTES); ?>" class="btn btn-danger" style="background-color: #d9534f; color: white;">Eliminar</a>
                                 </td>
                             </tr>
                         <?php endwhile; ?>

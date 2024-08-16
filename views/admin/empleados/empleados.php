@@ -57,6 +57,37 @@ while ($row_posicion = oci_fetch_assoc($cursor_posiciones)) {
     $posiciones_data[$row_posicion['ID_POSICION']] = $row_posicion['NOMBRE'];
 }
 
+// Preparar la llamada al procedimiento almacenado para obtener los estados
+$stid_estado = oci_parse($conn, 'BEGIN FIDE_ESTADO_TB_OBTENER_ESTADO_SP(:p_cursor); END;');
+
+// Crear y asociar el cursor de salida para los estados
+$cursor_estado = oci_new_cursor($conn);
+oci_bind_by_name($stid_estado, ':p_cursor', $cursor_estado, -1, OCI_B_CURSOR);
+
+// Ejecutar el procedimiento almacenado para obtener los estados
+$success_estado = oci_execute($stid_estado);
+
+if (!$success_estado) {
+    $e = oci_error($stid_estado);
+    die("Error al ejecutar el procedimiento almacenado para obtener estados: " . $e['message']);
+}
+
+// Ejecutar el cursor para obtener los resultados de estados
+$success_estado = oci_execute($cursor_estado);
+
+if (!$success_estado) {
+    $e = oci_error($cursor_estado);
+    die("Error al ejecutar el cursor de estados: " . $e['message']);
+}
+
+// Crear un array para almacenar los estados
+$estados = [];
+while ($row_estado = oci_fetch_assoc($cursor_estado)) {
+    $estados[$row_estado['ID_ESTADO']] = $row_estado['NOMBRE'];
+}
+
+oci_free_statement($stid_estado);
+oci_free_statement($cursor_estado);
 oci_free_statement($stid_posiciones);
 oci_free_statement($cursor_posiciones);
 oci_close($conn);
@@ -94,12 +125,13 @@ oci_close($conn);
                 <table class="table table-striped mt-3">
                     <thead>
                         <tr>
-                            <th>ID Empleado</th>
+                            <th>ID</th>
                             <th>Nombre</th>
                             <th>Apellido</th>
                             <th>Correo Electrónico</th>
                             <th>Teléfono</th>
                             <th>Puesto</th>
+                            <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -112,9 +144,9 @@ oci_close($conn);
                                 <td><?php echo htmlspecialchars($row['CORREO_ELECTRONICO'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['TELEFONO'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($posiciones_data[$row['ID_POSICION']] ?? 'Desconocido', ENT_QUOTES); ?></td>
+                                <td><?php echo htmlspecialchars($estados[$row['ID_ESTADO']] ?? 'Desconocido', ENT_QUOTES); ?></td>
                                 <td>
                                     <a href="editar_empleado.php?id=<?php echo htmlspecialchars($row['ID_EMPLEADO'], ENT_QUOTES); ?>" class="btn" style="background-color: #013e6a; color: white;">Editar</a>
-                                    <a href="eliminar_empleado.php?id=<?php echo htmlspecialchars($row['ID_EMPLEADO'], ENT_QUOTES); ?>" class="btn btn-danger" style="background-color: #d9534f; color: white;">Eliminar</a>
                                 </td>
                             </tr>
                         <?php endwhile; ?>
@@ -134,7 +166,6 @@ oci_close($conn);
     <?php
     oci_free_statement($stid_empleados);
     oci_free_statement($cursor_empleados);
-    oci_close($conn);
     ?>
 </body>
 </html>

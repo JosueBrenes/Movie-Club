@@ -9,6 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $id_posicion = $_POST['id_posicion'];
     $nombre = $_POST['nombre'];
     $descripcion = $_POST['descripcion'];
+    $id_estado = $_POST['id_estado'];
 
     // Validar que los campos no estén vacíos
     if (empty($id_posicion) || empty($nombre) || empty($descripcion)) {
@@ -16,13 +17,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     // Preparar la llamada al procedimiento almacenado
-    $sql = 'BEGIN FIDE_POSICION_TB_ACTUALIZAR_POSICION_SP(:id_posicion, :nombre, :descripcion); END;';
+    $sql = 'BEGIN FIDE_POSICION_TB_ACTUALIZAR_POSICION_SP(:id_posicion, :nombre, :descripcion, :id_estado); END;';
     $stid = oci_parse($conn, $sql);
 
     // Asignar los valores a los parámetros del procedimiento
     oci_bind_by_name($stid, ':id_posicion', $id_posicion);
     oci_bind_by_name($stid, ':nombre', $nombre);
     oci_bind_by_name($stid, ':descripcion', $descripcion);
+    oci_bind_by_name($stid, ':id_estado', $id_estado);
 
     // Ejecutar el procedimiento almacenado
     if (oci_execute($stid)) {

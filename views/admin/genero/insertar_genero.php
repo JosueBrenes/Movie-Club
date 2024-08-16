@@ -8,6 +8,7 @@ if (!$conn) {
 // Obtener los datos del formulario
 $nombre = $_POST['nombre'];
 $descripcion = $_POST['descripcion'];
+$id_estado = $_POST['id_estado'];
 
 try {
     // Obtener el siguiente valor de la secuencia para ID_GENERO
@@ -19,13 +20,14 @@ try {
     oci_free_statement($stid);
 
     // Preparar la llamada al procedimiento almacenado
-    $sql = 'BEGIN FIDE_GENERO_TB_INSERTAR_GENERO_SP(:id_genero, :nombre, :descripcion); END;';
+    $sql = 'BEGIN FIDE_GENERO_TB_INSERTAR_GENERO_SP(:id_genero, :nombre, :descripcion, :id_estado); END;';
     $stid = oci_parse($conn, $sql);
 
     // Asociar los parámetros
     oci_bind_by_name($stid, ':id_genero', $id_genero);
     oci_bind_by_name($stid, ':nombre', $nombre);
     oci_bind_by_name($stid, ':descripcion', $descripcion);
+    oci_bind_by_name($stid, ':id_estado', $id_estado);
 
     // Ejecutar el procedimiento
     $success = oci_execute($stid);

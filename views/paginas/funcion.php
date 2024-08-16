@@ -58,17 +58,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $id_pelicula = $_POST['id_pelicula'];
     $id_sala = $_POST['id_sala'];
     $id_cliente = $_POST['id_cliente'];
+    $id_estado = 1;
 
     $fecha_formateada = date('Y-m-d', strtotime($fecha));
 
     $id_funcion = obtener_siguiente_valor_secuencia('FIDE_FUNCION_TB_SEQ');
 
-    $sql = 'BEGIN FIDE_FUNCION_TB_INSERTAR_FUNCION_SP(:id_funcion, TO_DATE(:fecha, \'YYYY-MM-DD\'), :id_pelicula, :id_sala); END;';
+    $sql = 'BEGIN FIDE_FUNCION_TB_INSERTAR_FUNCION_SP(:id_funcion, TO_DATE(:fecha, \'YYYY-MM-DD\'), :id_pelicula, :id_sala, :id_estado); END;';
     $stid = oci_parse($conn, $sql);
     oci_bind_by_name($stid, ':id_funcion', $id_funcion);
     oci_bind_by_name($stid, ':fecha', $fecha_formateada);
     oci_bind_by_name($stid, ':id_pelicula', $id_pelicula);
     oci_bind_by_name($stid, ':id_sala', $id_sala);
+    oci_bind_by_name($stid, ':id_estado', $id_estado);
 
     if (oci_execute($stid)) {
         header("Location: reserva.php?id_funcion=$id_funcion&id_cliente=$id_cliente&fecha=$fecha_formateada");

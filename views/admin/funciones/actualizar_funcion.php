@@ -11,6 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $fecha = $_POST['fecha'];
     $id_pelicula = $_POST['id_pelicula'];
     $id_sala = $_POST['id_sala'];
+    $id_estado = $_POST['id_estado'];
 
     // Validar que los campos no estén vacíos
     if (empty($id_funcion) || empty($fecha) || empty($id_pelicula) || empty($id_sala)) {
@@ -21,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $fecha_formateada = date('Y-m-d', strtotime($fecha));
 
     // Llamar al procedimiento almacenado para actualizar
-    $proc = 'BEGIN FIDE_FUNCION_TB_ACTUALIZAR_FUNCION_SP(:id_funcion, TO_DATE(:fecha, \'YYYY-MM-DD\'), :id_pelicula, :id_sala); END;';
+    $proc = 'BEGIN FIDE_FUNCION_TB_ACTUALIZAR_FUNCION_SP(:id_funcion, TO_DATE(:fecha, \'YYYY-MM-DD\'), :id_pelicula, :id_sala, :id_estado); END;';
     $stid = oci_parse($conn, $proc);
 
     // Enlazar los parámetros
@@ -29,6 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     oci_bind_by_name($stid, ':fecha', $fecha_formateada);
     oci_bind_by_name($stid, ':id_pelicula', $id_pelicula);
     oci_bind_by_name($stid, ':id_sala', $id_sala);
+    oci_bind_by_name($stid, ':id_estado', $id_estado);
 
     // Ejecutar el procedimiento almacenado
     $success = oci_execute($stid);

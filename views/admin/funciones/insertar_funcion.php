@@ -9,6 +9,7 @@ if (!$conn) {
 $fecha = $_POST['fecha'];
 $id_pelicula = $_POST['id_pelicula'];
 $id_sala = $_POST['id_sala'];
+$id_estado = $_POST['id_estado'];
 
 // Obtener el siguiente valor de la secuencia
 $query = 'SELECT FIDE_FUNCION_SEQ.NEXTVAL AS id_funcion FROM dual';
@@ -21,7 +22,7 @@ $id_funcion = $row['ID_FUNCION'];
 $fecha_formateada = date('Y-m-d', strtotime($fecha));
 
 // Llamar al procedimiento almacenado
-$proc = 'BEGIN FIDE_FUNCION_TB_INSERTAR_FUNCION_SP(:id_funcion, TO_DATE(:fecha, \'YYYY-MM-DD\'), :id_pelicula, :id_sala); END;';
+$proc = 'BEGIN FIDE_FUNCION_TB_INSERTAR_FUNCION_SP(:id_funcion, TO_DATE(:fecha, \'YYYY-MM-DD\'), :id_pelicula, :id_sala, :id_estado); END;';
 $stid = oci_parse($conn, $proc);
 
 // Enlazar los parámetros
@@ -29,6 +30,7 @@ oci_bind_by_name($stid, ':id_funcion', $id_funcion);
 oci_bind_by_name($stid, ':fecha', $fecha_formateada);
 oci_bind_by_name($stid, ':id_pelicula', $id_pelicula);
 oci_bind_by_name($stid, ':id_sala', $id_sala);
+oci_bind_by_name($stid, ':id_estado', $id_estado);
 
 $success = oci_execute($stid);
 

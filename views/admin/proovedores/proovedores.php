@@ -27,6 +27,32 @@ if (!$success) {
     $e = oci_error($cursor);
     die("Error al ejecutar el cursor: " . $e['message']);
 }
+
+// Preparar la llamada al procedimiento almacenado para obtener los estados
+$stid_estado = oci_parse($conn, 'BEGIN FIDE_ESTADO_TB_OBTENER_ESTADO_SP(:p_cursor); END;');
+
+// Crear y asociar el cursor de salida para los estados
+$cursor_estado = oci_new_cursor($conn);
+oci_bind_by_name($stid_estado, ':p_cursor', $cursor_estado, -1, OCI_B_CURSOR);
+
+// Ejecutar el procedimiento almacenado para obtener los estados
+$success = oci_execute($stid_estado);
+oci_execute($cursor_estado);
+
+if (!$success) {
+    $e = oci_error($stid_estado);
+    die("Error al ejecutar el procedimiento almacenado para obtener estados: " . $e['message']);
+}
+
+// Crear un array para almacenar los estados
+$estados = [];
+while ($row_estado = oci_fetch_assoc($cursor_estado)) {
+    $estados[$row_estado['ID_ESTADO']] = $row_estado['NOMBRE'];
+}
+
+oci_free_statement($stid_estado);
+oci_free_statement($cursor_estado);
+
 ?>
 
 <!DOCTYPE html>
@@ -61,10 +87,11 @@ if (!$success) {
                 <table class="table table-striped mt-3">
                     <thead>
                         <tr>
-                            <th>ID Proveedor</th>
+                            <th>ID</th>
                             <th>Nombre</th>
                             <th>Contacto</th>
                             <th>Teléfono</th>
+                            <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -75,9 +102,9 @@ if (!$success) {
                                 <td><?php echo htmlspecialchars($row['NOMBRE'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['CONTACTO'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['TELEFONO'], ENT_QUOTES); ?></td>
+                                <td><?php echo htmlspecialchars($estados[$row['ID_ESTADO']], ENT_QUOTES); ?></td>
                                 <td>
                                     <a href="editar_proveedor.php?id=<?php echo htmlspecialchars($row['ID_PROVEEDOR'], ENT_QUOTES); ?>" class="btn" style="background-color: #013e6a; color: white;">Editar</a>
-                                    <a href="eliminar_proveedor.php?id=<?php echo htmlspecialchars($row['ID_PROVEEDOR'], ENT_QUOTES); ?>" class="btn btn-danger" onclick="return confirm('¿Estás seguro de que deseas eliminar este proveedor?');">Eliminar</a>
                                 </td>
                             </tr>
                         <?php endwhile; ?>

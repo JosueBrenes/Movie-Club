@@ -7,6 +7,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $apellido = $_POST['apellido'];
     $correo_electronico = $_POST['correo_electronico'];
     $contrasena = $_POST['contrasena'];
+    $id_estado = 1;
     
     $hashed_password = password_hash($contrasena, PASSWORD_BCRYPT);
     
@@ -22,13 +23,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $id_cliente = obtener_siguiente_valor_secuencia('FIDE_CLIENTES_TB_SEQ');
 
-    $sql = 'BEGIN FIDE_CLIENTES_TB_INSERTAR_CLIENTES_SP(:id_cliente, :nombre, :apellido, :correo_electronico, :contrasena); END;';
+    $sql = 'BEGIN FIDE_CLIENTES_TB_INSERTAR_CLIENTES_SP(:id_cliente, :nombre, :apellido, :correo_electronico, :contrasena, :id_estado); END;';
     $stid = oci_parse($conn, $sql);
     oci_bind_by_name($stid, ':id_cliente', $id_cliente);
     oci_bind_by_name($stid, ':nombre', $nombre);
     oci_bind_by_name($stid, ':apellido', $apellido);
     oci_bind_by_name($stid, ':correo_electronico', $correo_electronico);
     oci_bind_by_name($stid, ':contrasena', $hashed_password);
+    oci_bind_by_name($stid, ':id_estado', $id_estado);
 
     if (oci_execute($stid)) {
         header("Location: funcion.php?id_cliente=$id_cliente");

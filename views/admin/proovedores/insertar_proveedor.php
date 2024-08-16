@@ -9,6 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nombre = $_POST['nombre'];
     $contacto = $_POST['contacto'];
     $telefono = $_POST['telefono'];
+    $id_estado = $_POST['id_estado'];
 
     // Obtener el siguiente valor de la secuencia para ID_PROVEEDOR
     $query = 'SELECT FIDE_PROVEEDOR_SEQ.NEXTVAL AS id_proveedor FROM dual';
@@ -19,13 +20,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     oci_free_statement($stid);
 
     // Llamar al procedimiento almacenado
-    $proc = 'BEGIN FIDE_PROVEEDORES_TB_INSERTAR_PROVEEDOR_SP(:id_proveedor, :nombre, :contacto, :telefono); END;';
+    $proc = 'BEGIN FIDE_PROVEEDORES_TB_INSERTAR_PROVEEDOR_SP(:id_proveedor, :nombre, :contacto, :telefono, :id_estado); END;';
     $stid = oci_parse($conn, $proc);
 
     oci_bind_by_name($stid, ':id_proveedor', $id_proveedor);
     oci_bind_by_name($stid, ':nombre', $nombre);
     oci_bind_by_name($stid, ':contacto', $contacto);
     oci_bind_by_name($stid, ':telefono', $telefono);
+    oci_bind_by_name($stid, ':id_estado', $id_estado);
 
     $result = oci_execute($stid);
 

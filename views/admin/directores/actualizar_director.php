@@ -9,6 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $id_director = $_POST['id_director'];
     $nombre = $_POST['nombre'];
     $nacionalidad = $_POST['nacionalidad'];
+    $id_estado = $_POST['id_estado'];
 
     // Validar que los campos no estén vacíos
     if (empty($id_director) || empty($nombre) || empty($nacionalidad)) {
@@ -16,13 +17,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     // Preparar la llamada al procedimiento almacenado
-    $sql = 'BEGIN FIDE_DIRECTOR_TB_ACTUALIZAR_DIRECTOR_SP(:id_director, :nombre, :nacionalidad); END;';
+    $sql = 'BEGIN FIDE_DIRECTOR_TB_ACTUALIZAR_DIRECTOR_SP(:id_director, :nombre, :nacionalidad, :id_estado); END;';
     $stid = oci_parse($conn, $sql);
 
     // Asignar los valores a los parámetros del procedimiento
     oci_bind_by_name($stid, ':id_director', $id_director);
     oci_bind_by_name($stid, ':nombre', $nombre);
     oci_bind_by_name($stid, ':nacionalidad', $nacionalidad);
+    oci_bind_by_name($stid, ':id_estado', $id_estado);
 
     // Ejecutar el procedimiento almacenado
     if (oci_execute($stid)) {

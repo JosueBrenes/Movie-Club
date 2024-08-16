@@ -114,7 +114,7 @@ function obtener_datos_adicionales() {
     <nav class="menu">
       <a href="../../public/index.php">Inicio</a>
       <a href="../../views/paginas/cartelera.php" class="btn-contact" style="background-color: #19a4bf">Cartelera</a>
-      <a href="../views/auth/login.php" class="btn-contact" style="background-color: #19a4bf">Administrar</a>
+      <a href="../../views/auth/login.php" class="btn-contact" style="background-color: #19a4bf">Administrar</a>
     </nav>
   </header>
 

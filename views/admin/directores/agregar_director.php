@@ -43,6 +43,33 @@ if (!$conn) {
                         <label for="nacionalidad">Nacionalidad</label>
                         <input type="text" id="nacionalidad" name="nacionalidad" class="form-control">
                     </div>
+                    <div class="form-group">
+                        <label for="id_estado">Estado</label>
+                        <select id="id_estado" name="id_estado" class="form-control" required>
+                            <?php
+                            include '../../../includes/database.php';
+                            
+                            $sql = 'BEGIN FIDE_ESTADO_TB_OBTENER_ESTADO_SP(:p_cursor); END;';
+                            $stid = oci_parse($conn, $sql);
+                            
+                            $cursor = oci_new_cursor($conn);
+                            
+                            oci_bind_by_name($stid, ":p_cursor", $cursor, -1, OCI_B_CURSOR);
+                            
+                            oci_execute($stid);
+                            
+                            oci_execute($cursor);
+                            
+                            while ($row = oci_fetch_assoc($cursor)) {
+                                echo '<option value="' . htmlspecialchars($row['ID_ESTADO'], ENT_QUOTES) . '">' . htmlspecialchars($row['NOMBRE'], ENT_QUOTES) . '</option>';
+                            }
+                            
+                            oci_free_statement($cursor);
+                            oci_free_statement($stid);
+                            oci_close($conn);
+                            ?>
+                        </select>
+                    </div>
                     <button type="submit" class="btn" style="background-color: #013e6a; color: white; margin-bottom: 2rem;">Agregar Director</button>
                 </form>
             </div>

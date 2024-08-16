@@ -47,6 +47,31 @@ if (!$director) {
     die("No se encontró el director.");
 }
 
+// Obtener los estados
+$stid_estados = oci_parse($conn, 'BEGIN FIDE_ESTADO_TB_OBTENER_ESTADO_SP(:p_cursor); END;');
+$cursor_estados = oci_new_cursor($conn);
+oci_bind_by_name($stid_estados, ':p_cursor', $cursor_estados, -1, OCI_B_CURSOR);
+$success_estados = oci_execute($stid_estados);
+
+if (!$success_estados) {
+    $e = oci_error($stid_estados);
+    die("Error al ejecutar el procedimiento almacenado de estados: " . $e['message']);
+}
+
+$success_estados = oci_execute($cursor_estados);
+
+if (!$success_estados) {
+    $e = oci_error($cursor_estados);
+    die("Error al ejecutar el cursor de estados: " . $e['message']);
+}
+
+$estados_data = [];
+while ($row_estado = oci_fetch_assoc($cursor_estados)) {
+    $estados_data[$row_estado['ID_ESTADO']] = $row_estado['NOMBRE'];
+}
+
+oci_free_statement($stid_estados);
+oci_free_statement($cursor_estados);
 oci_free_statement($stid);
 oci_free_statement($cursor);
 oci_close($conn);
@@ -87,8 +112,18 @@ oci_close($conn);
                         <input type="text" id="nombre" name="nombre" class="form-control" value="<?php echo htmlspecialchars($director['NOMBRE'] ?? '', ENT_QUOTES); ?>" required>
                     </div>
                     <div class="form-group">
-                        <label for="apellido">Apellido</label>
-                        <input type="text" id="apellido" name="apellido" class="form-control" value="<?php echo htmlspecialchars($director['APELLIDO'] ?? '', ENT_QUOTES); ?>" required>
+                        <label for="nacionalidad">Nacionalidad</label>
+                        <input type="text" id="nacionalidad" name="nacionalidad" class="form-control" value="<?php echo htmlspecialchars($director['NACIONALIDAD'] ?? '', ENT_QUOTES); ?>" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="estado">Estado</label>
+                        <select class="form-control" id="estado" name="id_estado" required>
+                            <?php foreach ($estados_data as $id_estado => $descripcion_estado): ?>
+                                <option value="<?php echo htmlspecialchars($id_estado); ?>" <?php echo $director['ID_ESTADO'] == $id_estado ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($descripcion_estado); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                     <button type="submit" class="btn" style="background-color: #013e6a; color: white; margin-bottom: 2rem;">Actualizar Director</button>
                 </form>

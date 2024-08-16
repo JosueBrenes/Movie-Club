@@ -10,13 +10,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nombre = $_POST['nombre'];
     $contacto = $_POST['contacto'];
     $telefono = $_POST['telefono'];
+    $id_estado = $_POST['id_estado'];
 
     if (empty($id_proveedor) || empty($nombre) || empty($contacto) || empty($telefono)) {
         die("Todos los campos son requeridos.");
     }
 
     // Prepara la llamada al procedimiento almacenado
-    $sql = 'BEGIN FIDE_PROVEEDORES_TB_ACTUALIZAR_PROVEEDOR_SP(:id_proveedor, :nombre, :contacto, :telefono); END;';
+    $sql = 'BEGIN FIDE_PROVEEDORES_TB_ACTUALIZAR_PROVEEDOR_SP(:id_proveedor, :nombre, :contacto, :telefono, :id_estados); END;';
     $stid = oci_parse($conn, $sql);
 
     // Asigna los valores a los parámetros del procedimiento
@@ -24,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     oci_bind_by_name($stid, ':nombre', $nombre);
     oci_bind_by_name($stid, ':contacto', $contacto);
     oci_bind_by_name($stid, ':telefono', $telefono);
+    oci_bind_by_name($stid, ':id_estado', $id_estado);
 
     // Ejecuta el procedimiento almacenado
     if (oci_execute($stid)) {

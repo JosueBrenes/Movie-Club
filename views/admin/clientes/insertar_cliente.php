@@ -10,6 +10,7 @@ if (!$conn) {
 $nombre = $_POST['nombre'];
 $apellido = $_POST['apellido'];
 $correo_electronico = $_POST['email'];
+$id_estado = $_POST['id_estado'];
 
 try {
     // Obtener el siguiente valor de la secuencia para ID_CLIENTE
@@ -21,7 +22,7 @@ try {
     oci_free_statement($stid);
 
     // Preparar la llamada al procedimiento almacenado
-    $sql = 'BEGIN FIDE_CLIENTES_TB_INSERTAR_CLIENTES_SP(:id_cliente, :nombre, :apellido, :correo_electronico); END;';
+    $sql = 'BEGIN FIDE_CLIENTES_TB_INSERTAR_CLIENTES_SP(:id_cliente, :nombre, :apellido, :correo_electronico, :id_estado); END;';
     $stid = oci_parse($conn, $sql);
 
     // Asociar los parámetros
@@ -29,6 +30,7 @@ try {
     oci_bind_by_name($stid, ':nombre', $nombre);
     oci_bind_by_name($stid, ':apellido', $apellido);
     oci_bind_by_name($stid, ':correo_electronico', $correo_electronico);
+    oci_bind_by_name($stid, ':id_estado', $id_estado);
 
     // Ejecutar el procedimiento
     $success = oci_execute($stid);

@@ -8,6 +8,7 @@ if (!$conn) {
 
 $id_inventario = $_POST['id_inventario'];
 $precio = $_POST['precio'];
+$id_estado = $_POST['id_estado'];
 
 try {
     // Obtener el siguiente valor de la secuencia para ID_COMIDA
@@ -19,13 +20,14 @@ try {
     oci_free_statement($stid); 
 
     // Llamar al procedimiento almacenado para insertar en FIDE_COMIDA_TB
-    $sql = 'BEGIN FIDE_COMIDA_TB_INSERTAR_COMIDA_SP(:id_comida, :id_inventario, :precio); END;';
+    $sql = 'BEGIN FIDE_COMIDA_TB_INSERTAR_COMIDA_SP(:id_comida, :id_inventario, :precio, :id_estado); END;';
     $stid = oci_parse($conn, $sql);
 
     // Vincular los parámetros
     oci_bind_by_name($stid, ':id_comida', $id_comida);
     oci_bind_by_name($stid, ':id_inventario', $id_inventario);
     oci_bind_by_name($stid, ':precio', $precio);
+    oci_bind_by_name($stid, ':id_estado', $id_estado);
 
     // Ejecutar el procedimiento almacenado
     $success = oci_execute($stid);

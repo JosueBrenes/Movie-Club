@@ -45,6 +45,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $id_funcion = $_POST['id_funcion'];
     $fecha_reserva = $_POST['fecha_reserva'];
     $cantidad_asientos = $_POST['cantidad_asientos'];
+    $id_estado = 1;
 
     $fecha_reserva_formateada = date('Y-m-d', strtotime($fecha_reserva));
 
@@ -60,17 +61,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $id_reserva = obtener_siguiente_valor_secuencia('FIDE_RESERVAS_TB_SEQ');
 
-    $sql = 'BEGIN FIDE_RESERVAS_TB_INSERTAR_RESERVA_SP(:id_reserva, :id_cliente, :id_funcion, TO_DATE(:fecha_reserva, \'YYYY-MM-DD\'), :cantidad_asientos); END;';
+    $sql = 'BEGIN FIDE_RESERVAS_TB_INSERTAR_RESERVAS_SP(:id_reserva, :id_cliente, :id_funcion, TO_DATE(:fecha_reserva, \'YYYY-MM-DD\'), :cantidad_asientos, :id_estado); END;';
     $stid = oci_parse($conn, $sql);
     oci_bind_by_name($stid, ':id_reserva', $id_reserva);
     oci_bind_by_name($stid, ':id_cliente', $id_cliente);
     oci_bind_by_name($stid, ':id_funcion', $id_funcion);
     oci_bind_by_name($stid, ':fecha_reserva', $fecha_reserva_formateada);
     oci_bind_by_name($stid, ':cantidad_asientos', $cantidad_asientos);
+    oci_bind_by_name($stid, ':id_estado', $id_estado);
 
     if (oci_execute($stid)) {
-        $mensaje = "<p class='text-success'>Reserva creada exitosamente.</p>";
-        $redireccionar = true; 
+        header("Location: pagar_reserva.php?id_reserva=$id_reserva&id_cliente=$id_cliente&id_funcion=$id_funcion&cantidad_asientos=$cantidad_asientos&fecha_reserva=$fecha_reserva");
+        exit;
     } else {
         $error = oci_error($stid);
         $mensaje = "<p class='text-danger'>Error: " . $error['message'] . "</p>";

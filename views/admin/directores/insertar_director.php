@@ -8,6 +8,7 @@ if (!$conn) {
 // Obtener los datos del formulario
 $nombre = $_POST['nombre'];
 $nacionalidad = $_POST['nacionalidad'];
+$id_estado = $_POST['id_estado'];
 
 try {
     // Obtener el siguiente valor de la secuencia para ID_DIRECTOR
@@ -27,13 +28,14 @@ try {
     oci_free_statement($stid);
 
     // Preparar la llamada al procedimiento almacenado
-    $sql = 'BEGIN FIDE_DIRECTOR_TB_INSERTAR_DIRECTOR_SP(:id_director, :nombre, :nacionalidad); END;';
+    $sql = 'BEGIN FIDE_DIRECTOR_TB_INSERTAR_DIRECTOR_SP(:id_director, :nombre, :nacionalidad, :id_estado); END;';
     $stid = oci_parse($conn, $sql);
 
     // Asociar los parámetros
     oci_bind_by_name($stid, ':id_director', $id_director);
     oci_bind_by_name($stid, ':nombre', $nombre);
     oci_bind_by_name($stid, ':nacionalidad', $nacionalidad);
+    oci_bind_by_name($stid, ':id_estado', $id_estado);
 
     // Ejecutar el procedimiento
     $success = oci_execute($stid);

@@ -41,10 +41,32 @@ while ($row_proveedor = oci_fetch_assoc($cursor_proveedores)) {
     $proveedores_data[$row_proveedor['ID_PROVEEDOR']] = $row_proveedor['NOMBRE'];
 }
 
+// Preparar la llamada al procedimiento almacenado para obtener los estados
+$stid_estado = oci_parse($conn, 'BEGIN FIDE_ESTADO_TB_OBTENER_ESTADO_SP(:p_cursor); END;');
+
+// Crear y asociar el cursor de salida para los estados
+$cursor_estado = oci_new_cursor($conn);
+oci_bind_by_name($stid_estado, ':p_cursor', $cursor_estado, -1, OCI_B_CURSOR);
+
+// Ejecutar el procedimiento almacenado para obtener los estados
+$success = oci_execute($stid_estado);
+oci_execute($cursor_estado);
+
+if (!$success) {
+    $e = oci_error($stid_estado);
+    die("Error al ejecutar el procedimiento almacenado para obtener estados: " . $e['message']);
+}
+
+// Crear un array para almacenar los estados
+$estados = [];
+while ($row_estado = oci_fetch_assoc($cursor_estado)) {
+    $estados[$row_estado['ID_ESTADO']] = $row_estado['NOMBRE'];
+}
+
+oci_free_statement($stid_estado);
+oci_free_statement($cursor_estado);
 oci_free_statement($stid_proveedores);
 oci_free_statement($cursor_proveedores);
-
-// Mostrar el inventario
 ?>
 
 <!DOCTYPE html>
@@ -79,11 +101,12 @@ oci_free_statement($cursor_proveedores);
                 <table class="table table-striped mt-3">
                     <thead>
                         <tr>
-                            <th>ID Inventario</th>
+                            <th>ID</th>
                             <th>Nombre</th>
                             <th>Descripción</th>
                             <th>Cantidad</th>
                             <th>Proveedor</th>
+                            <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -95,9 +118,9 @@ oci_free_statement($cursor_proveedores);
                                 <td><?php echo htmlspecialchars($row['DESCRIPCION'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['CANTIDAD'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($proveedores_data[$row['ID_PROVEEDOR']] ?? 'Desconocido', ENT_QUOTES); ?></td>
+                                <td><?php echo htmlspecialchars($estados[$row['ID_ESTADO']], ENT_QUOTES); ?></td>
                                 <td>
                                     <a href="editar_inventario.php?id=<?php echo htmlspecialchars($row['ID_INVENTARIO'], ENT_QUOTES); ?>" class="btn" style="background-color: #013e6a; color: white;">Editar</a>
-                                    <a href="eliminar_inventario.php?id=<?php echo htmlspecialchars($row['ID_INVENTARIO'], ENT_QUOTES); ?>" class="btn btn-danger" onclick="return confirm('¿Estás seguro de que deseas eliminar este inventario?');">Eliminar</a>
                                 </td>
                             </tr>
                         <?php endwhile; ?>

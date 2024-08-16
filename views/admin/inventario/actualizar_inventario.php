@@ -11,13 +11,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $descripcion = $_POST['descripcion'];
     $cantidad = $_POST['cantidad'];
     $id_proveedor = $_POST['id_proveedor'];
+    $id_estado = $_POST['id_estado'];
 
     if (empty($id_inventario) || empty($nombre) || empty($descripcion) || empty($cantidad) || empty($id_proveedor)) {
         die("Todos los campos son requeridos.");
     }
 
     // Prepara la llamada al procedimiento almacenado
-    $sql = 'BEGIN FIDE_INVENTARIO_TB_ACTUALIZAR_INVENTARIO_SP(:id_inventario, :nombre, :descripcion, :cantidad, :id_proveedor); END;';
+    $sql = 'BEGIN FIDE_INVENTARIO_TB_ACTUALIZAR_INVENTARIO_SP(:id_inventario, :nombre, :descripcion, :cantidad, :id_proveedor, :id_estado); END;';
     $stid = oci_parse($conn, $sql);
 
     // Asigna los valores a los parámetros del procedimiento
@@ -26,6 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     oci_bind_by_name($stid, ':descripcion', $descripcion);
     oci_bind_by_name($stid, ':cantidad', $cantidad);
     oci_bind_by_name($stid, ':id_proveedor', $id_proveedor);
+    oci_bind_by_name($stid, ':id_estado', $id_estado);
 
     // Ejecuta el procedimiento almacenado
     if (oci_execute($stid)) {
