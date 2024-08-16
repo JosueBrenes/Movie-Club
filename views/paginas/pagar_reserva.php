@@ -33,21 +33,15 @@ function obtener_metodos_pago() {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $metodo_pago = $_POST['metodo_pago'];
-
-    if ($metodo_pago == 1) {
-        $mensaje = "<p class='text-warning'>Tiene 24 horas para realizar el pago, de lo contrario la reserva será cancelada.</p>";
-    } elseif ($metodo_pago == 2) {
-        // Redirigir a la página con los datos de la reserva
-        header('Location: procesando_factura.php?' . http_build_query([
-            'id_reserva' => $id_reserva,
-            'id_cliente' => $id_cliente,
-            'id_funcion' => $id_funcion,
-            'cantidad_asientos' => $cantidad_asientos,
-            'fecha_reserva' => $fecha_reserva
-        ]));
-        exit;
-    }
+    // No se requiere lógica de validación del lado del servidor aquí
+    header('Location: procesando_factura.php?' . http_build_query([
+        'id_reserva' => $id_reserva,
+        'id_cliente' => $id_cliente,
+        'id_funcion' => $id_funcion,
+        'cantidad_asientos' => $cantidad_asientos,
+        'fecha_reserva' => $fecha_reserva
+    ]));
+    exit;
 }
 ?>
 
@@ -65,6 +59,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <style>
         .additional-info {
             display: none;
+        }
+        .error-message {
+            color: red;
+            font-size: 0.875em;
         }
     </style>
 </head>
@@ -88,15 +86,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="container mt-5 mb-5">
         <h1 class="text-center mb-4">Pago de Reserva</h1>
 
-        <?php if ($mensaje): ?>
-            <div class="alert <?php echo strpos($mensaje, 'exitosamente') !== false ? 'alert-success' : (strpos($mensaje, 'complete todos los campos') !== false ? 'alert-danger' : 'alert-warning'); ?> text-center custom-alert mb-3" role="alert">
-                <?php echo $mensaje; ?>
-            </div>
-        <?php endif; ?>
+        <div id="form-messages"></div>
 
         <div class="card">
             <div class="card-body">
-                <form method="post" id="payment-form">
+                <form method="post" id="payment-form" onsubmit="return validarFormulario()">
                     <div class="form-group">
                         <label for="metodo_pago">Seleccione un Método de Pago</label>
                         <select id="metodo_pago" name="metodo_pago" class="form-control" required onchange="mostrarCamposTarjeta()">
@@ -113,19 +107,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <h4>Información de la Tarjeta</h4>
                         <div class="form-group">
                             <label for="numero_tarjeta">Número de Tarjeta</label>
-                            <input type="text" id="numero_tarjeta" name="numero_tarjeta" class="form-control" value="<?php echo isset($_POST['numero_tarjeta']) ? htmlspecialchars($_POST['numero_tarjeta']) : ''; ?>" required>
+                            <input type="text" id="numero_tarjeta" name="numero_tarjeta" class="form-control">
+                            <div id="numero_tarjeta_error" class="error-message"></div>
                         </div>
                         <div class="form-group">
                             <label for="nombre_titular">Nombre del Titular</label>
-                            <input type="text" id="nombre_titular" name="nombre_titular" class="form-control" value="<?php echo isset($_POST['nombre_titular']) ? htmlspecialchars($_POST['nombre_titular']) : ''; ?>" required>
+                            <input type="text" id="nombre_titular" name="nombre_titular" class="form-control" required>
+                            <div id="nombre_titular_error" class="error-message"></div>
                         </div>
                         <div class="form-group">
                             <label for="fecha_vencimiento">Fecha de Vencimiento</label>
-                            <input type="text" id="fecha_vencimiento" name="fecha_vencimiento" class="form-control" placeholder="MM/AA" value="<?php echo isset($_POST['fecha_vencimiento']) ? htmlspecialchars($_POST['fecha_vencimiento']) : ''; ?>" required>
+                            <input type="text" id="fecha_vencimiento" name="fecha_vencimiento" class="form-control" placeholder="MM/AA">
+                            <div id="fecha_vencimiento_error" class="error-message"></div>
                         </div>
                         <div class="form-group">
                             <label for="codigo_seguridad">Código de Seguridad</label>
-                            <input type="text" id="codigo_seguridad" name="codigo_seguridad" class="form-control" value="<?php echo isset($_POST['codigo_seguridad']) ? htmlspecialchars($_POST['codigo_seguridad']) : ''; ?>" required>
+                            <input type="text" id="codigo_seguridad" name="codigo_seguridad" class="form-control">
+                            <div id="codigo_seguridad_error" class="error-message"></div>
                         </div>
                     </div>
 
@@ -146,19 +144,66 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         function mostrarCamposTarjeta() {
             var metodoPago = document.getElementById('metodo_pago').value;
             var tarjetaInfo = document.getElementById('tarjeta-info');
-            if (metodoPago == '2') {
+            if (metodoPago == '2') { // Asumiendo que '2' es el valor para tarjeta de crédito
                 tarjetaInfo.style.display = 'block';
             } else {
                 tarjetaInfo.style.display = 'none';
             }
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            mostrarCamposTarjeta();
-        });
-    </script>
+        function validarFormulario() {
+            var metodoPago = document.getElementById('metodo_pago').value;
+            var esValido = true;
 
-    <?php include '../templates/footer.php'; ?>
+            // Limpiar mensajes de error previos
+            document.getElementById('form-messages').innerHTML = '';
+            var camposErrores = {
+                'numero_tarjeta': '',
+                'nombre_titular': '',
+                'fecha_vencimiento': '',
+                'codigo_seguridad': ''
+            };
+
+            if (metodoPago == '2') { 
+                var numeroTarjeta = document.getElementById('numero_tarjeta').value;
+                var nombreTitular = document.getElementById('nombre_titular').value;
+                var fechaVencimiento = document.getElementById('fecha_vencimiento').value;
+                var codigoSeguridad = document.getElementById('codigo_seguridad').value;
+
+                var tarjetaPattern = /^\d{4}-\d{4}-\d{4}-\d{4}$/;
+                if (!tarjetaPattern.test(numeroTarjeta)) {
+                    camposErrores['numero_tarjeta'] = 'El formato del número de tarjeta debe ser 1111-1111-1111-1111.';
+                    esValido = false;
+                }
+
+                if (nombreTitular.trim() === '') {
+                    camposErrores['nombre_titular'] = 'El nombre del titular es obligatorio.';
+                    esValido = false;
+                }
+
+                if (codigoSeguridad.length < 3) {
+                    camposErrores['codigo_seguridad'] = 'El código de seguridad debe tener al menos 3 caracteres.';
+                    esValido = false;
+                }
+
+                var fechaPattern = /^(0[1-9]|1[0-2])\/([2-9][0-9])$/;
+                if (!fechaPattern.test(fechaVencimiento)) {
+                    camposErrores['fecha_vencimiento'] = 'La fecha de vencimiento debe tener el formato MM/AA.';
+                    esValido = false;
+                }
+
+                for (var campo in camposErrores) {
+                    document.getElementById(campo + '_error').innerText = camposErrores[campo];
+                }
+            }
+
+            if (!esValido) {
+                document.getElementById('form-messages').innerHTML = '<div class="alert alert-danger">Por favor, corrija los errores en el formulario.</div>';
+            }
+
+            return esValido;
+        }
+    </script>
 
 </body>
 </html>
