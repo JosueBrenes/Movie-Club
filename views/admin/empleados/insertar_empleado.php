@@ -24,7 +24,7 @@ try {
     oci_free_statement($stid);
 
     // Preparar la llamada al procedimiento almacenado
-    $sql = 'BEGIN FIDE_EMPLEADOS_TB_INSERTAR_EMPLEADO_SP(:id_empleado, :nombre, :apellido, :correo_electronico, :telefono, :id_posicion, :id_estado); END;';
+    $sql = 'BEGIN FIDE_EMPLEADOS_TB_INSERTAR_EMPLEADO_SP(:id_empleado, :nombre, :apellido, :correo_electronico, :telefono, :id_posicion, :contrasena, :id_estado); END;';
     $stid = oci_parse($conn, $sql);
 
     // Asociar los parámetros
@@ -34,6 +34,7 @@ try {
     oci_bind_by_name($stid, ':correo_electronico', $correo_electronico);
     oci_bind_by_name($stid, ':telefono', $telefono);
     oci_bind_by_name($stid, ':id_posicion', $id_posicion);
+    oci_bind_by_name($stid, ':contrasena', $contrasena);
     oci_bind_by_name($stid, ':id_estado', $id_estado);
 
     // Ejecutar el procedimiento

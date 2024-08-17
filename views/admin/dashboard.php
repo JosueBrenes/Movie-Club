@@ -46,7 +46,7 @@ oci_close($conn);
     href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
   />
   <link rel="stylesheet" href="../../public/build/css/stylesDash.css" />
-  <link rel="icon" href="../public/build/img/icon.png" type="image/x-icon" />
+  <link rel="icon" href="../../public/build/img/icon.png" type="image/x-icon" />
   <link
     rel="shortcut icon"
     href="../public/build/img/icon.png"

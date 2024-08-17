@@ -5,19 +5,19 @@ if (!$conn) {
     die("Conexión fallida: " . htmlentities(oci_error()['message'], ENT_QUOTES));
 }
 
-// Preparar la llamada al procedimiento almacenado
-$stid = oci_parse($conn, 'BEGIN FIDE_CLIENTES_TB_OBTENER_CLIENTES_SP(:p_cursor); END;');
+// Preparar la llamada a la función almacenada
+$stid = oci_parse($conn, 'BEGIN :p_cursor := FIDE_CLIENTES_TB_FILTRAR_ORDEN_ALFABETICO_FN(); END;');
 
 // Crear y asociar el cursor de salida
 $cursor = oci_new_cursor($conn);
 oci_bind_by_name($stid, ':p_cursor', $cursor, -1, OCI_B_CURSOR);
 
-// Ejecutar el procedimiento almacenado
+// Ejecutar la función almacenada
 $success = oci_execute($stid);
 
 if (!$success) {
     $e = oci_error($stid);
-    die("Error al ejecutar el procedimiento almacenado: " . $e['message']);
+    die("Error al ejecutar la función almacenada: " . $e['message']);
 }
 
 // Ejecutar el cursor para obtener los resultados

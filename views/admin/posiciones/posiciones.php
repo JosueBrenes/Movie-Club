@@ -5,37 +5,11 @@ if (!$conn) {
     die("Conexión fallida: " . htmlentities(oci_error()['message'], ENT_QUOTES));
 }
 
-// Preparar la llamada al procedimiento almacenado
-$stid = oci_parse($conn, 'BEGIN FIDE_POSICION_TB_OBTENER_POSICION_SP(:p_cursor); END;');
-
-// Crear y asociar el cursor de salida
-$cursor = oci_new_cursor($conn);
-oci_bind_by_name($stid, ':p_cursor', $cursor, -1, OCI_B_CURSOR);
-
-// Ejecutar el procedimiento almacenado
-$success = oci_execute($stid);
-
-if (!$success) {
-    $e = oci_error($stid);
-    die("Error al ejecutar el procedimiento almacenado: " . $e['message']);
-}
-
-// Ejecutar el cursor para obtener los resultados
-$success = oci_execute($cursor);
-
-if (!$success) {
-    $e = oci_error($cursor);
-    die("Error al ejecutar el cursor: " . $e['message']);
-}
-
-// Preparar la llamada al procedimiento almacenado para obtener los estados
+// Obtener estados
 $stid_estado = oci_parse($conn, 'BEGIN FIDE_ESTADO_TB_OBTENER_ESTADO_SP(:p_cursor); END;');
-
-// Crear y asociar el cursor de salida para los estados
 $cursor_estado = oci_new_cursor($conn);
 oci_bind_by_name($stid_estado, ':p_cursor', $cursor_estado, -1, OCI_B_CURSOR);
 
-// Ejecutar el procedimiento almacenado para obtener los estados
 $success = oci_execute($stid_estado);
 oci_execute($cursor_estado);
 
@@ -53,6 +27,28 @@ while ($row_estado = oci_fetch_assoc($cursor_estado)) {
 oci_free_statement($stid_estado);
 oci_free_statement($cursor_estado);
 
+// Obtener el estado seleccionado para filtrar
+$id_estado = isset($_POST['id_estado']) ? intval($_POST['id_estado']) : null;
+
+// Llamar a la función FILTRAR_POR_ESTADO para obtener las posiciones
+$stid_posicion = oci_parse($conn, 'BEGIN :p_cursor := FIDE_POSICION_TB_FILTRAR_ESTADO_FN(:p_id_estado); END;');
+$cursor_posicion = oci_new_cursor($conn);
+oci_bind_by_name($stid_posicion, ':p_id_estado', $id_estado, -1, SQLT_INT);
+oci_bind_by_name($stid_posicion, ':p_cursor', $cursor_posicion, -1, OCI_B_CURSOR);
+
+$success = oci_execute($stid_posicion);
+
+if (!$success) {
+    $e = oci_error($stid_posicion);
+    die("Error al ejecutar la función FIDE_POSICION_TB_FILTRAR_ESTADO_FN: " . $e['message']);
+}
+
+$success = oci_execute($cursor_posicion);
+
+if (!$success) {
+    $e = oci_error($cursor_posicion);
+    die("Error al ejecutar el cursor: " . $e['message']);
+}
 ?>
 
 <!DOCTYPE html>
@@ -83,7 +79,24 @@ oci_free_statement($cursor_estado);
         <section class="options_area">
             <div class="container mt-5">
                 <h1 style="color: #333">Posiciones</h1>
-                <a href="agregar_posicion.php" class="button">Agregar Nueva Posición</a>
+
+                <!-- Formulario para seleccionar estado -->
+                <form method="POST" action="">
+                    <div class="form-group">
+                        <label for="id_estado">Filtrar por Estado:</label>
+                        <select id="id_estado" name="id_estado" class="form-control">
+                            <option value="">Todos</option>
+                            <?php foreach ($estados as $id => $nombre): ?>
+                                <option value="<?php echo htmlspecialchars($id, ENT_QUOTES); ?>" <?php echo ($id_estado == $id) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($nombre, ENT_QUOTES); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn button" style="font-weight: bold !important;">Filtrar</button>
+                    <a href="agregar_posicion.php" class="button">Agregar Nueva Posición</a>
+                </form>
+
                 <table class="table table-striped mt-3">
                     <thead>
                         <tr>
@@ -95,7 +108,7 @@ oci_free_statement($cursor_estado);
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($row = oci_fetch_assoc($cursor)): ?>
+                        <?php while ($row = oci_fetch_assoc($cursor_posicion)): ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($row['ID_POSICION'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['NOMBRE'], ENT_QUOTES); ?></td>
@@ -119,10 +132,10 @@ oci_free_statement($cursor_estado);
         </footer>
     </div>
 
-    <?php 
-    oci_free_statement($stid);
-    oci_free_statement($cursor);
-    oci_close($conn); 
+    <?php
+    oci_free_statement($stid_posicion);
+    oci_free_statement($cursor_posicion);
+    oci_close($conn);
     ?>
 </body>
 </html>

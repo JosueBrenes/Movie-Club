@@ -5,24 +5,11 @@ if (!$conn) {
     die("Conexión fallida: " . htmlentities(oci_error()['message'], ENT_QUOTES));
 }
 
-// Llamar al procedimiento almacenado
-$stid = oci_parse($conn, 'BEGIN FIDE_TIPO_SALA_TB_OBTENER_TIPO_SALA_SP(:p_cursor); END;');
-
-// Crear y asociar el cursor de salida
-$cursor = oci_new_cursor($conn);
-oci_bind_by_name($stid, ':p_cursor', $cursor, -1, OCI_B_CURSOR);
-
-oci_execute($stid);
-oci_execute($cursor);
-
-// Preparar la llamada al procedimiento almacenado para obtener los estados
+// Obtener estados
 $stid_estado = oci_parse($conn, 'BEGIN FIDE_ESTADO_TB_OBTENER_ESTADO_SP(:p_cursor); END;');
-
-// Crear y asociar el cursor de salida para los estados
 $cursor_estado = oci_new_cursor($conn);
 oci_bind_by_name($stid_estado, ':p_cursor', $cursor_estado, -1, OCI_B_CURSOR);
 
-// Ejecutar el procedimiento almacenado para obtener los estados
 $success = oci_execute($stid_estado);
 oci_execute($cursor_estado);
 
@@ -40,6 +27,28 @@ while ($row_estado = oci_fetch_assoc($cursor_estado)) {
 oci_free_statement($stid_estado);
 oci_free_statement($cursor_estado);
 
+// Obtener el estado seleccionado para filtrar
+$id_estado = isset($_POST['id_estado']) ? intval($_POST['id_estado']) : null;
+
+// Llamar a la función FIDE_TIPO_SALA_TB_FILTRAR_ESTADO_FN para obtener los tipos de sala
+$stid_tipo_sala = oci_parse($conn, 'BEGIN :p_cursor := FIDE_TIPO_SALA_TB_FILTRAR_ESTADO_FN(:p_id_estado); END;');
+$cursor_tipo_sala = oci_new_cursor($conn);
+oci_bind_by_name($stid_tipo_sala, ':p_id_estado', $id_estado, -1, SQLT_INT);
+oci_bind_by_name($stid_tipo_sala, ':p_cursor', $cursor_tipo_sala, -1, OCI_B_CURSOR);
+
+$success = oci_execute($stid_tipo_sala);
+
+if (!$success) {
+    $e = oci_error($stid_tipo_sala);
+    die("Error al ejecutar la función FIDE_TIPO_SALA_TB_FILTRAR_ESTADO_FN: " . $e['message']);
+}
+
+$success = oci_execute($cursor_tipo_sala);
+
+if (!$success) {
+    $e = oci_error($cursor_tipo_sala);
+    die("Error al ejecutar el cursor: " . $e['message']);
+}
 ?>
 
 <!DOCTYPE html>
@@ -70,7 +79,24 @@ oci_free_statement($cursor_estado);
         <section class="options_area">
             <div class="container mt-5">
                 <h1 style="color: #333">Tipos de Sala</h1>
-                <a href="agregar_tipo_sala.php" class="button">Agregar Nuevo Tipo de Sala</a>
+
+                <!-- Formulario para seleccionar estado -->
+                <form method="POST" action="">
+                    <div class="form-group">
+                        <label for="id_estado">Filtrar por Estado:</label>
+                        <select id="id_estado" name="id_estado" class="form-control">
+                            <option value="">Todos</option>
+                            <?php foreach ($estados as $id => $nombre): ?>
+                                <option value="<?php echo htmlspecialchars($id, ENT_QUOTES); ?>" <?php echo ($id_estado == $id) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($nombre, ENT_QUOTES); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn button" style="font-weight: bold !important;">Filtrar</button>
+                    <a href="agregar_tipo_sala.php" class="button">Agregar Nuevo Tipo de Sala</a>
+                </form>
+
                 <table class="table table-striped mt-3">
                     <thead>
                         <tr>
@@ -82,7 +108,7 @@ oci_free_statement($cursor_estado);
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($row = oci_fetch_assoc($cursor)): ?>
+                        <?php while ($row = oci_fetch_assoc($cursor_tipo_sala)): ?>
                             <tr>
                                 <td><?php echo htmlspecialchars($row['ID_TIPO_SALA'], ENT_QUOTES); ?></td>
                                 <td><?php echo htmlspecialchars($row['NOMBRE'], ENT_QUOTES); ?></td>
@@ -107,8 +133,8 @@ oci_free_statement($cursor_estado);
     </div>
 
     <?php
-    oci_free_statement($stid);
-    oci_free_statement($cursor);
+    oci_free_statement($stid_tipo_sala);
+    oci_free_statement($cursor_tipo_sala);
     oci_close($conn);
     ?>
 </body>

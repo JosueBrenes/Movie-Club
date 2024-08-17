@@ -31,29 +31,33 @@ while (($row = oci_fetch_assoc($cursor)) !== false) {
 $stid_estados = oci_parse($conn, 'BEGIN FIDE_ESTADO_TB_OBTENER_ESTADO_SP(:p_cursor); END;');
 $cursor_estados = oci_new_cursor($conn);
 oci_bind_by_name($stid_estados, ':p_cursor', $cursor_estados, -1, OCI_B_CURSOR);
-$success_estados = oci_execute($stid_estados);
-
-if (!$success_estados) {
-    $e = oci_error($stid_estados);
-    die("Error al ejecutar el procedimiento almacenado de estados: " . $e['message']);
-}
-
-$success_estados = oci_execute($cursor_estados);
-
-if (!$success_estados) {
-    $e = oci_error($cursor_estados);
-    die("Error al ejecutar el cursor de estados: " . $e['message']);
-}
+oci_execute($stid_estados);
+oci_execute($cursor_estados);
 
 $estados_data = [];
 while ($row_estado = oci_fetch_assoc($cursor_estados)) {
     $estados_data[$row_estado['ID_ESTADO']] = $row_estado['NOMBRE'];
 }
 
-oci_free_statement($stid_estados);
-oci_free_statement($cursor_estados);
+// Obtener las posiciones
+$stid_posiciones = oci_parse($conn, 'BEGIN FIDE_POSICION_TB_OBTENER_POSICION_SP(:p_cursor); END;');
+$cursor_posiciones = oci_new_cursor($conn);
+oci_bind_by_name($stid_posiciones, ':p_cursor', $cursor_posiciones, -1, OCI_B_CURSOR);
+oci_execute($stid_posiciones);
+oci_execute($cursor_posiciones);
+
+$posiciones_data = [];
+while ($row_posicion = oci_fetch_assoc($cursor_posiciones)) {
+    $posiciones_data[$row_posicion['ID_POSICION']] = $row_posicion['NOMBRE'];
+}
+
+// Libera los recursos y cierra la conexión
 oci_free_statement($stid);
 oci_free_statement($cursor);
+oci_free_statement($stid_estados);
+oci_free_statement($cursor_estados);
+oci_free_statement($stid_posiciones);
+oci_free_statement($cursor_posiciones);
 oci_close($conn);
 
 if (!$empleado) {
@@ -110,27 +114,16 @@ if (!$empleado) {
                     <div class="form-group">
                         <label for="id_posicion">Puesto</label>
                         <select id="id_posicion" name="id_posicion" class="form-control" required>
-                            <?php
-                            include '../../../includes/database.php'; 
-                            $stid_posiciones = oci_parse($conn, 'BEGIN FIDE_POSICION_TB_OBTENER_POSICIONES_SP(:p_cursor); END;');
-                            $cursor_posiciones = oci_new_cursor($conn);
-                            oci_bind_by_name($stid_posiciones, ':p_cursor', $cursor_posiciones, -1, OCI_B_CURSOR);
-                            oci_execute($stid_posiciones);
-                            oci_execute($cursor_posiciones);
-
-                            while ($posicion = oci_fetch_assoc($cursor_posiciones)) {
-                                $selected = ($posicion['ID_POSICION'] == $empleado['ID_POSICION']) ? 'selected' : '';
-                                echo "<option value=\"{$posicion['ID_POSICION']}\" $selected>{$posicion['NOMBRE']}</option>";
-                            }
-
-                            oci_free_statement($stid_posiciones);
-                            oci_free_statement($cursor_posiciones);
-                            ?>
+                            <?php foreach ($posiciones_data as $id_posicion => $nombre_posicion): ?>
+                                <option value="<?php echo htmlspecialchars($id_posicion); ?>" <?php echo $empleado['ID_POSICION'] == $id_posicion ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($nombre_posicion); ?>
+                                </option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="contrasena">Contraseña</label>
-                        <input type="password" id="contrasena" name="contrasena" class="form-control" placeholder="Dejar en blanco si no se desea cambiar">
+                        <input type="password" id="contrasena" name="contrasena" class="form-control" required>
                     </div>
                     <div class="form-group">
                         <label for="estado">Estado</label>

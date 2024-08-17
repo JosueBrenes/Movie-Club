@@ -5,17 +5,22 @@ if (!$conn) {
     die("Conexión fallida: " . htmlentities(oci_error()['message'], ENT_QUOTES));
 }
 
-if (!isset($_GET['id_director']) || empty($_GET['id_director'])) {
+// Verificar que el ID del director se proporciona en la URL
+if (!isset($_GET['id']) || empty($_GET['id'])) {
     die("ID del director no proporcionado.");
 }
 
-$id_director = $_GET['id_director'];
+$id_director = intval($_GET['id']); // Asegúrate de que el ID sea un entero
 
-// Preparar la llamada al procedimiento almacenado
-$stid = oci_parse($conn, 'BEGIN FIDE_DIRECTOR_TB_OBTENER_DIRECTOR_SP(:p_cursor); END;');
+// Mostrar el ID del director para depuración
+echo "ID del director: " . htmlspecialchars($id_director, ENT_QUOTES) . "<br>";
 
-// Crear y asociar el cursor de salida
+// Preparar la llamada al procedimiento almacenado para obtener el director
+$stid = oci_parse($conn, 'BEGIN FIDE_DIRECTOR_TB_OBTENER_DIRECTOR_SP(:p_id_director, :p_cursor); END;');
 $cursor = oci_new_cursor($conn);
+
+// Asegúrate de que los tipos y tamaños de los parámetros sean correctos
+oci_bind_by_name($stid, ':p_id_director', $id_director, -1, SQLT_INT);
 oci_bind_by_name($stid, ':p_cursor', $cursor, -1, OCI_B_CURSOR);
 
 // Ejecutar el procedimiento almacenado
@@ -41,10 +46,6 @@ while (($row = oci_fetch_assoc($cursor)) !== false) {
         $director = $row;
         break;
     }
-}
-
-if (!$director) {
-    die("No se encontró el director.");
 }
 
 // Obtener los estados
@@ -106,7 +107,7 @@ oci_close($conn);
             <div class="container mt-5">
                 <h1 style="color: #333">Editar Director</h1>
                 <form action="actualizar_director.php" method="POST">
-                    <input type="hidden" name="id_director" value="<?php echo htmlspecialchars($director['ID_DIRECTOR'] ?? '', ENT_QUOTES); ?>">
+                    <input type="hidden" name="id_director" value="<?php echo htmlspecialchars($id_director, ENT_QUOTES); ?>">
                     <div class="form-group">
                         <label for="nombre">Nombre</label>
                         <input type="text" id="nombre" name="nombre" class="form-control" value="<?php echo htmlspecialchars($director['NOMBRE'] ?? '', ENT_QUOTES); ?>" required>
@@ -119,7 +120,7 @@ oci_close($conn);
                         <label for="estado">Estado</label>
                         <select class="form-control" id="estado" name="id_estado" required>
                             <?php foreach ($estados_data as $id_estado => $descripcion_estado): ?>
-                                <option value="<?php echo htmlspecialchars($id_estado); ?>" <?php echo $director['ID_ESTADO'] == $id_estado ? 'selected' : ''; ?>>
+                                <option value="<?php echo htmlspecialchars($id_estado); ?>" <?php echo isset($director['ID_ESTADO']) && $director['ID_ESTADO'] == $id_estado ? 'selected' : ''; ?>>
                                     <?php echo htmlspecialchars($descripcion_estado); ?>
                                 </option>
                             <?php endforeach; ?>

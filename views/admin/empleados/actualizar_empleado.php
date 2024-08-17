@@ -2,47 +2,46 @@
 include '../../../includes/database.php';
 
 if (!$conn) {
-    die("Conexión fallida: " . htmlentities(oci_error()['message'], ENT_QUOTES));
+    echo "No se pudo conectar a la base de datos.";
+    exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    
     $id_empleado = $_POST['id_empleado'];
     $nombre = $_POST['nombre'];
     $apellido = $_POST['apellido'];
     $correo = $_POST['correo'];
     $telefono = $_POST['telefono'];
     $id_posicion = $_POST['id_posicion'];
-    $contrasena = isset($_POST['contrasena']) ? $_POST['contrasena'] : '';
+    $contrasena = isset($_POST['contrasena']) && !empty($_POST['contrasena']) ? $_POST['contrasena'] : NULL;
     $id_estado = $_POST['id_estado'];
 
-    if (empty($id_empleado) || empty($nombre) || empty($apellido) || empty($correo) || empty($id_posicion)) {
-        die("Todos los campos son requeridos.");
-    }
+    $stid = oci_parse($conn, 'BEGIN FIDE_EMPLEADOS_TB_ACTUALIZAR_EMPLEADO_SP(:P_ID_EMPLEADO, :P_NOMBRE, :P_APELLIDO, :P_CORREO_ELECTRONICO, :P_TELEFONO, :P_ID_POSICION, :P_CONTRASENA, :P_ID_ESTADO); END;');
 
-    // Prepara la llamada al procedimiento almacenado
-    $sql = 'BEGIN FIDE_EMPLEADOS_TB_ACTUALIZAR_EMPLEADO_SP(:id_empleado, :nombre, :apellido, :correo, :telefono, :id_posicion. :id_estado); END;';
-    $stid = oci_parse($conn, $sql);
+    // Bind de parámetros
+    oci_bind_by_name($stid, ':P_ID_EMPLEADO', $id_empleado);
+    oci_bind_by_name($stid, ':P_NOMBRE', $nombre);
+    oci_bind_by_name($stid, ':P_APELLIDO', $apellido);
+    oci_bind_by_name($stid, ':P_CORREO_ELECTRONICO', $correo);
+    oci_bind_by_name($stid, ':P_TELEFONO', $telefono);
+    oci_bind_by_name($stid, ':P_ID_POSICION', $id_posicion);
+    oci_bind_by_name($stid, ':P_CONTRASENA', $contrasena, -1, SQLT_CHR);
+    oci_bind_by_name($stid, ':P_ID_ESTADO', $id_estado);
 
-    // Asigna los valores a los parámetros del procedimiento
-    oci_bind_by_name($stid, ':id_empleado', $id_empleado);
-    oci_bind_by_name($stid, ':nombre', $nombre);
-    oci_bind_by_name($stid, ':apellido', $apellido);
-    oci_bind_by_name($stid, ':correo', $correo);
-    oci_bind_by_name($stid, ':telefono', $telefono);
-    oci_bind_by_name($stid, ':id_posicion', $id_posicion);
-    oci_bind_by_name($stid, ':id_estado', $id_estado);
+    $success = oci_execute($stid);
 
-    // Ejecuta el procedimiento almacenado
-    if (oci_execute($stid)) {
+    if ($success) {
         header('Location: empleados.php?msg=Empleado actualizado con éxito');
         exit;
     } else {
-        $error = oci_error($stid);
-        die("Error al actualizar el empleado: " . htmlentities($error['message'], ENT_QUOTES));
+        $e = oci_error($stid);
+        echo "Error al actualizar el empleado: " . $e['message'];
     }
 
     oci_free_statement($stid);
     oci_close($conn);
 } else {
-    die("Método de solicitud no válido.");
+    die("No se recibieron datos del formulario.");
 }
+?>

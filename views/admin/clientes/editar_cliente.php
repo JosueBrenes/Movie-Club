@@ -11,32 +11,26 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 
 $cliente_id = $_GET['id'];
 
-// Preparar la llamada al procedimiento almacenado
+// Preparar la llamada al procedimiento almacenado para obtener el cliente
 $stid = oci_parse($conn, 'BEGIN FIDE_CLIENTES_TB_OBTENER_CLIENTES_SP(:p_cursor); END;');
-
-// Crear y asociar el cursor de salida
 $cursor = oci_new_cursor($conn);
 oci_bind_by_name($stid, ':p_cursor', $cursor, -1, OCI_B_CURSOR);
 
 // Ejecutar el procedimiento almacenado
-$success = oci_execute($stid);
-
-if (!$success) {
+if (!oci_execute($stid)) {
     $e = oci_error($stid);
-    die("Error al ejecutar el procedimiento almacenado: " . $e['message']);
+    die("Error al ejecutar el procedimiento almacenado: " . htmlentities($e['message'], ENT_QUOTES));
 }
 
 // Ejecutar el cursor para obtener los resultados
-$success = oci_execute($cursor);
-
-if (!$success) {
+if (!oci_execute($cursor)) {
     $e = oci_error($cursor);
-    die("Error al ejecutar el cursor: " . $e['message']);
+    die("Error al ejecutar el cursor: " . htmlentities($e['message'], ENT_QUOTES));
 }
 
 // Buscar el cliente en el cursor
 $cliente = null;
-while (($row = oci_fetch_assoc($cursor)) != false) {
+while (($row = oci_fetch_assoc($cursor)) !== false) {
     if ($row['ID_CLIENTE'] == $cliente_id) {
         $cliente = $row;
         break;
@@ -51,18 +45,14 @@ if (!$cliente) {
 $stid_estados = oci_parse($conn, 'BEGIN FIDE_ESTADO_TB_OBTENER_ESTADO_SP(:p_cursor); END;');
 $cursor_estados = oci_new_cursor($conn);
 oci_bind_by_name($stid_estados, ':p_cursor', $cursor_estados, -1, OCI_B_CURSOR);
-$success_estados = oci_execute($stid_estados);
-
-if (!$success_estados) {
+if (!oci_execute($stid_estados)) {
     $e = oci_error($stid_estados);
-    die("Error al ejecutar el procedimiento almacenado de estados: " . $e['message']);
+    die("Error al ejecutar el procedimiento almacenado de estados: " . htmlentities($e['message'], ENT_QUOTES));
 }
 
-$success_estados = oci_execute($cursor_estados);
-
-if (!$success_estados) {
+if (!oci_execute($cursor_estados)) {
     $e = oci_error($cursor_estados);
-    die("Error al ejecutar el cursor de estados: " . $e['message']);
+    die("Error al ejecutar el cursor de estados: " . htmlentities($e['message'], ENT_QUOTES));
 }
 
 $estados_data = [];
@@ -75,7 +65,6 @@ oci_free_statement($cursor_estados);
 oci_free_statement($stid);
 oci_free_statement($cursor);
 oci_close($conn);
-
 ?>
 
 <!DOCTYPE html>
@@ -119,6 +108,10 @@ oci_close($conn);
                     <div class="form-group">
                         <label for="email">Correo Electrónico</label>
                         <input type="email" id="email" name="email" class="form-control" value="<?php echo htmlspecialchars($cliente['CORREO_ELECTRONICO'] ?? '', ENT_QUOTES); ?>" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contrasena">Contraseña</label>
+                        <input type="password" id="contrasena" name="contrasena" class="form-control" value="<?php echo htmlspecialchars($cliente['CONTRASENA'] ?? '', ENT_QUOTES); ?>" required>
                     </div>
                     <div class="form-group">
                         <label for="estado">Estado</label>

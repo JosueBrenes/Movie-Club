@@ -97,7 +97,7 @@ oci_close($conn);
         <!-- Main Content -->
         <section class="options_area">
             <div class="container mt-5">
-                <h1>Editar Género</h1>
+                <h1 style="color: #333">Editar Género</h1>
                 <form action="actualizar_genero.php" method="post">
                     <input type="hidden" name="id_genero" value="<?php echo htmlspecialchars($genero['ID_GENERO'], ENT_QUOTES); ?>">
                     <div class="form-group">

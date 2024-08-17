@@ -6,28 +6,29 @@ if (!$conn) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $id_inventario = $_POST['id_inventario'];
-    $nombre = $_POST['nombre'];
-    $descripcion = $_POST['descripcion'];
-    $cantidad = $_POST['cantidad'];
-    $id_proveedor = $_POST['id_proveedor'];
-    $id_estado = $_POST['id_estado'];
+    // Obtener los datos del formulario
+    $id_inventario = isset($_POST['id_inventario']) ? intval($_POST['id_inventario']) : 0;
+    $nombre = isset($_POST['nombre']) ? trim($_POST['nombre']) : '';
+    $descripcion = isset($_POST['descripcion']) ? trim($_POST['descripcion']) : '';
+    $cantidad = isset($_POST['cantidad']) ? intval($_POST['cantidad']) : 0;
+    $id_proveedor = isset($_POST['proveedor']) ? intval($_POST['proveedor']) : 0; // Asegúrate de que el nombre coincide con el del formulario
+    $id_estado = isset($_POST['id_estado']) ? intval($_POST['id_estado']) : 0;
 
     if (empty($id_inventario) || empty($nombre) || empty($descripcion) || empty($cantidad) || empty($id_proveedor)) {
         die("Todos los campos son requeridos.");
     }
 
     // Prepara la llamada al procedimiento almacenado
-    $sql = 'BEGIN FIDE_INVENTARIO_TB_ACTUALIZAR_INVENTARIO_SP(:id_inventario, :nombre, :descripcion, :cantidad, :id_proveedor, :id_estado); END;';
+    $sql = 'BEGIN FIDE_INVENTARIO_TB_ACTUALIZAR_INVENTARIO_SP(:P_ID_INVENTARIO, :P_NOMBRE, :P_DESCRIPCION, :P_CANTIDAD, :P_ID_PROVEEDOR, :P_ID_ESTADO); END;';
     $stid = oci_parse($conn, $sql);
 
     // Asigna los valores a los parámetros del procedimiento
-    oci_bind_by_name($stid, ':id_inventario', $id_inventario);
-    oci_bind_by_name($stid, ':nombre', $nombre);
-    oci_bind_by_name($stid, ':descripcion', $descripcion);
-    oci_bind_by_name($stid, ':cantidad', $cantidad);
-    oci_bind_by_name($stid, ':id_proveedor', $id_proveedor);
-    oci_bind_by_name($stid, ':id_estado', $id_estado);
+    oci_bind_by_name($stid, ':P_ID_INVENTARIO', $id_inventario);
+    oci_bind_by_name($stid, ':P_NOMBRE', $nombre);
+    oci_bind_by_name($stid, ':P_DESCRIPCION', $descripcion);
+    oci_bind_by_name($stid, ':P_CANTIDAD', $cantidad);
+    oci_bind_by_name($stid, ':P_ID_PROVEEDOR', $id_proveedor);
+    oci_bind_by_name($stid, ':P_ID_ESTADO', $id_estado);
 
     // Ejecuta el procedimiento almacenado
     if (oci_execute($stid)) {
@@ -43,3 +44,4 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 } else {
     die("Método de solicitud no válido.");
 }
+?>

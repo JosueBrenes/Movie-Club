@@ -54,7 +54,7 @@ if (!$pelicula) {
     exit;
 }
 
-// Preparar y ejecutar los procedimientos almacenados para obtener géneros
+// Preparar y ejecutar el procedimiento almacenado para obtener géneros
 $sql_generos = 'BEGIN FIDE_GENERO_TB_OBTENER_GENERO_SP(:p_cursor); END;';
 $stid_generos = oci_parse($conn, $sql_generos);
 
@@ -83,16 +83,13 @@ while ($row_genero = oci_fetch_assoc($cursor_generos)) {
     $generos[] = $row_genero;
 }
 
-// Preparar y ejecutar el procedimiento almacenado para obtener directores
-$sql_directores = 'BEGIN FIDE_DIRECTOR_TB_OBTENER_DIRECTOR_SP(:p_cursor); END;';
+// Obtener directores usando un SELECT directo
+$sql_directores = 'SELECT ID_DIRECTOR, NOMBRE FROM FIDE_DIRECTOR_TB';
 $stid_directores = oci_parse($conn, $sql_directores);
-
-$cursor_directores = oci_new_cursor($conn);
-oci_bind_by_name($stid_directores, ':p_cursor', $cursor_directores, -1, OCI_B_CURSOR);
 
 if (!$stid_directores) {
     $e = oci_error($conn);
-    echo "Error al preparar el procedimiento de directores: " . $e['message'];
+    echo "Error al preparar el SELECT de directores: " . $e['message'];
     exit;
 }
 
@@ -100,28 +97,23 @@ $success_directores = oci_execute($stid_directores);
 
 if (!$success_directores) {
     $e = oci_error($stid_directores);
-    echo "Error al ejecutar el procedimiento de directores: " . $e['message'];
+    echo "Error al ejecutar el SELECT de directores: " . $e['message'];
     exit;
 }
 
-oci_execute($cursor_directores);
-
 // Obtener los directores
 $directores = [];
-while ($row_director = oci_fetch_assoc($cursor_directores)) {
+while ($row_director = oci_fetch_assoc($stid_directores)) {
     $directores[] = $row_director;
 }
 
-// Preparar y ejecutar el procedimiento almacenado para obtener idiomas
-$sql_idiomas = 'BEGIN FIDE_IDIOMAS_TB_OBTENER_IDIOMAS_SP(:p_cursor); END;';
+// Preparar y ejecutar el SELECT directo para obtener idiomas
+$sql_idiomas = 'SELECT ID_IDIOMAS, NOMBRE FROM FIDE_IDIOMAS_TB';
 $stid_idiomas = oci_parse($conn, $sql_idiomas);
-
-$cursor_idiomas = oci_new_cursor($conn);
-oci_bind_by_name($stid_idiomas, ':p_cursor', $cursor_idiomas, -1, OCI_B_CURSOR);
 
 if (!$stid_idiomas) {
     $e = oci_error($conn);
-    echo "Error al preparar el procedimiento de idiomas: " . $e['message'];
+    echo "Error al preparar el SELECT de idiomas: " . $e['message'];
     exit;
 }
 
@@ -129,15 +121,13 @@ $success_idiomas = oci_execute($stid_idiomas);
 
 if (!$success_idiomas) {
     $e = oci_error($stid_idiomas);
-    echo "Error al ejecutar el procedimiento de idiomas: " . $e['message'];
+    echo "Error al ejecutar el SELECT de idiomas: " . $e['message'];
     exit;
 }
 
-oci_execute($cursor_idiomas);
-
 // Obtener los idiomas
 $idiomas = [];
-while ($row_idioma = oci_fetch_assoc($cursor_idiomas)) {
+while ($row_idioma = oci_fetch_assoc($stid_idiomas)) {
     $idiomas[] = $row_idioma;
 }
 
@@ -177,8 +167,6 @@ oci_free_statement($stid_idiomas);
 oci_free_statement($stid_estados);
 oci_free_statement($cursor);
 oci_free_statement($cursor_generos);
-oci_free_statement($cursor_directores);
-oci_free_statement($cursor_idiomas);
 oci_free_statement($cursor_estados);
 oci_close($conn);
 ?>
@@ -212,67 +200,59 @@ oci_close($conn);
             <div class="container mt-5">
                 <h1>Editar Película</h1>
                 <form action="actualizar_pelicula.php" method="post">
-        <input type="hidden" name="id_pelicula" value="<?php echo htmlspecialchars($pelicula['ID_PELICULA'], ENT_QUOTES); ?>">
-        <div class="form-group">
-            <label for="nombre">Nombre</label>
-            <input type="text" id="nombre" name="nombre" class="form-control" value="<?php echo htmlspecialchars($pelicula['NOMBRE'], ENT_QUOTES); ?>" required>
-        </div>
-        <div class="form-group">
-            <label for="descripcion">Descripción</label>
-            <textarea id="descripcion" name="descripcion" class="form-control" required><?php echo htmlspecialchars($pelicula['DESCRIPCION'], ENT_QUOTES); ?></textarea>
-        </div>
-        <div class="form-group">
-            <label for="genero">Género</label>
-            <select id="genero" name="id_genero" class="form-control" required>
-                <?php foreach ($generos as $genero): ?>
-                    <option value="<?php echo htmlspecialchars($genero['ID_GENERO'], ENT_QUOTES); ?>" <?php if ($genero['ID_GENERO'] == $pelicula['ID_GENERO']) echo 'selected'; ?>>
-                        <?php echo htmlspecialchars($genero['NOMBRE'], ENT_QUOTES); ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="director">Director</label>
-            <select id="director" name="id_director" class="form-control" required>
-                <?php foreach ($directores as $director): ?>
-                    <option value="<?php echo htmlspecialchars($director['ID_DIRECTOR'], ENT_QUOTES); ?>" <?php if ($director['ID_DIRECTOR'] == $pelicula['ID_DIRECTOR']) echo 'selected'; ?>>
-                        <?php echo htmlspecialchars($director['NOMBRE'], ENT_QUOTES); ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="idioma">Idioma</label>
-            <select id="idioma" name="id_idioma" class="form-control" required>
-                <?php foreach ($idiomas as $idioma): ?>
-                    <option value="<?php echo htmlspecialchars($idioma['ID_IDIOMAS'], ENT_QUOTES); ?>" <?php if ($idioma['ID_IDIOMAS'] == $pelicula['ID_IDIOMA']) echo 'selected'; ?>>
-                        <?php echo htmlspecialchars($idioma['NOMBRE'], ENT_QUOTES); ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="estado">Estado</label>
-            <select id="estado" name="id_estado" class="form-control" required>
-                <?php foreach ($estados as $estado): ?>
-                    <option value="<?php echo htmlspecialchars($estado['ID_ESTADO'], ENT_QUOTES); ?>" <?php if ($estado['ID_ESTADO'] == $pelicula['ID_ESTADO']) echo 'selected'; ?>>
-                        <?php echo htmlspecialchars($estado['NOMBRE'], ENT_QUOTES); ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-                    <button type="submit" class="btn" style="background-color: #013e6a; color: white; margin-bottom: 2rem;">Actualizar</button>
+                    <input type="hidden" name="id_pelicula" value="<?php echo htmlspecialchars($pelicula['ID_PELICULA'], ENT_QUOTES); ?>">
+                    <div class="form-group">
+                        <label for="nombre">Nombre</label>
+                        <input type="text" id="nombre" name="nombre" class="form-control" value="<?php echo htmlspecialchars($pelicula['NOMBRE'], ENT_QUOTES); ?>" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="descripcion">Descripción</label>
+                        <textarea id="descripcion" name="descripcion" class="form-control" required><?php echo htmlspecialchars($pelicula['DESCRIPCION'], ENT_QUOTES); ?></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="genero">Género</label>
+                        <select id="genero" name="id_genero" class="form-control" required>
+                            <?php foreach ($generos as $genero): ?>
+                                <option value="<?php echo htmlspecialchars($genero['ID_GENERO'], ENT_QUOTES); ?>" <?php if ($genero['ID_GENERO'] == $pelicula['ID_GENERO']) echo 'selected'; ?>>
+                                    <?php echo htmlspecialchars($genero['NOMBRE'], ENT_QUOTES); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="director">Director</label>
+                        <select id="director" name="id_director" class="form-control" required>
+                            <?php foreach ($directores as $director): ?>
+                                <option value="<?php echo htmlspecialchars($director['ID_DIRECTOR'], ENT_QUOTES); ?>" <?php if ($director['ID_DIRECTOR'] == $pelicula['ID_DIRECTOR']) echo 'selected'; ?>>
+                                    <?php echo htmlspecialchars($director['NOMBRE'], ENT_QUOTES); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="idioma">Idioma</label>
+                        <select id="idioma" name="id_idioma" class="form-control" required>
+                            <?php foreach ($idiomas as $idioma): ?>
+                                <option value="<?php echo htmlspecialchars($idioma['ID_IDIOMAS'], ENT_QUOTES); ?>" <?php if ($idioma['ID_IDIOMAS'] == $pelicula['ID_IDIOMAS']) echo 'selected'; ?>>
+                                    <?php echo htmlspecialchars($idioma['NOMBRE'], ENT_QUOTES); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="estado">Estado</label>
+                        <select id="estado" name="id_estado" class="form-control" required>
+                            <?php foreach ($estados as $estado): ?>
+                                <option value="<?php echo htmlspecialchars($estado['ID_ESTADO'], ENT_QUOTES); ?>" <?php if ($estado['ID_ESTADO'] == $pelicula['ID_ESTADO']) echo 'selected'; ?>>
+                                    <?php echo htmlspecialchars($estado['NOMBRE'], ENT_QUOTES); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn button">Actualizar</button>
                 </form>
-
             </div>
         </section>
-
-        <!-- Footer -->
-        <footer class="footer_area">
-            <p class="footer_text">
-                &copy; 2024 Movie Club. Todos los derechos reservados.
-            </p>
-        </footer>
     </div>
 </body>
 </html>

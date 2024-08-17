@@ -102,7 +102,7 @@ oci_close($conn);
         <!-- Main Content -->
         <section class="options_area">
             <div class="container mt-5">
-                <h1>Editar Inventario</h1>
+                <h1 style="color: #333">Editar Inventario</h1>
                 <form action="actualizar_inventario.php" method="post">
                     <input type="hidden" name="id_inventario" value="<?php echo htmlspecialchars($inventario['ID_INVENTARIO'], ENT_QUOTES); ?>">
                     <div class="form-group">

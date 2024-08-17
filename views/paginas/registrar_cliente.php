@@ -21,7 +21,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         return $row['NEXTVAL'];
     }
 
-    $id_cliente = obtener_siguiente_valor_secuencia('FIDE_CLIENTES_TB_SEQ');
+    $id_cliente = obtener_siguiente_valor_secuencia('FIDE_CLIENTES_SEQ');
 
     $sql = 'BEGIN FIDE_CLIENTES_TB_INSERTAR_CLIENTES_SP(:id_cliente, :nombre, :apellido, :correo_electronico, :contrasena, :id_estado); END;';
     $stid = oci_parse($conn, $sql);
@@ -62,7 +62,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </a>
         <nav class="menu">
             <a href="../../views/paginas/cartelera.php" class="btn-contact" style="background-color: #19a4bf">Cartelera</a>
-            <a href="../views/auth/login.php" class="btn-contact" style="background-color: #19a4bf">Administrar</a>
+            <a href="../../views/auth/login.php" class="btn-contact" style="background-color: #19a4bf">Administrar</a>
         </nav>
     </header>
 

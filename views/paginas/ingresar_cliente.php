@@ -54,7 +54,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </a>
         <nav class="menu">
             <a href="../../views/paginas/cartelera.php" class="btn-contact" style="background-color: #19a4bf">Cartelera</a>
-            <a href="../views/auth/login.php" class="btn-contact" style="background-color: #19a4bf">Administrar</a>
+            <a href="../../views/auth/login.php" class="btn-contact" style="background-color: #19a4bf">Administrar</a>
         </nav>
     </header>
 

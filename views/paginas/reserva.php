@@ -59,7 +59,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         return $row['NEXTVAL'];
     }
 
-    $id_reserva = obtener_siguiente_valor_secuencia('FIDE_RESERVAS_TB_SEQ');
+    $id_reserva = obtener_siguiente_valor_secuencia('FIDE_RESERVAS_SEQ');
 
     $sql = 'BEGIN FIDE_RESERVAS_TB_INSERTAR_RESERVAS_SP(:id_reserva, :id_cliente, :id_funcion, TO_DATE(:fecha_reserva, \'YYYY-MM-DD\'), :cantidad_asientos, :id_estado); END;';
     $stid = oci_parse($conn, $sql);

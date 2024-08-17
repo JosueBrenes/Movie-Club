@@ -2,42 +2,50 @@
 include '../../../includes/database.php';
 
 if (!$conn) {
-    die("Conexión fallida: " . htmlentities(oci_error()['message'], ENT_QUOTES));
+    echo "No se pudo conectar a la base de datos.";
+    exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $id_proveedor = $_POST['id_proveedor'];
-    $nombre = $_POST['nombre'];
-    $contacto = $_POST['contacto'];
-    $telefono = $_POST['telefono'];
-    $id_estado = $_POST['id_estado'];
+// Obtener los datos del formulario
+$id_proveedor = isset($_POST['id_proveedor']) ? intval($_POST['id_proveedor']) : 0;
+$nombre = isset($_POST['nombre']) ? trim($_POST['nombre']) : '';
+$contacto = isset($_POST['contacto']) ? trim($_POST['contacto']) : '';
+$telefono = isset($_POST['telefono']) ? trim($_POST['telefono']) : '';
+$id_estado = isset($_POST['id_estado']) ? intval($_POST['id_estado']) : 0;
 
-    if (empty($id_proveedor) || empty($nombre) || empty($contacto) || empty($telefono)) {
-        die("Todos los campos son requeridos.");
-    }
+if ($id_proveedor <= 0 || empty($nombre)) {
+    echo "Datos inválidos.";
+    exit;
+}
 
-    // Prepara la llamada al procedimiento almacenado
-    $sql = 'BEGIN FIDE_PROVEEDORES_TB_ACTUALIZAR_PROVEEDOR_SP(:id_proveedor, :nombre, :contacto, :telefono, :id_estados); END;';
-    $stid = oci_parse($conn, $sql);
+// Preparar y ejecutar el procedimiento almacenado
+$sql = 'BEGIN FIDE_PROVEEDORES_TB_ACTUALIZAR_PROVEEDOR_SP(:P_ID_PROVEEDOR, :P_NOMBRE, :P_CONTACTO, :P_TELEFONO, :P_ID_ESTADO); END;';
+$stid = oci_parse($conn, $sql);
 
-    // Asigna los valores a los parámetros del procedimiento
-    oci_bind_by_name($stid, ':id_proveedor', $id_proveedor);
-    oci_bind_by_name($stid, ':nombre', $nombre);
-    oci_bind_by_name($stid, ':contacto', $contacto);
-    oci_bind_by_name($stid, ':telefono', $telefono);
-    oci_bind_by_name($stid, ':id_estado', $id_estado);
+// Enlazar las variables
+oci_bind_by_name($stid, ':P_ID_PROVEEDOR', $id_proveedor);
+oci_bind_by_name($stid, ':P_NOMBRE', $nombre);
+oci_bind_by_name($stid, ':P_CONTACTO', $contacto);
+oci_bind_by_name($stid, ':P_TELEFONO', $telefono);
+oci_bind_by_name($stid, ':P_ID_ESTADO', $id_estado);
 
-    // Ejecuta el procedimiento almacenado
-    if (oci_execute($stid)) {
-        header('Location: proovedores.php?msg=Proveedor actualizado con éxito');
-        exit;
-    } else {
-        $error = oci_error($stid);
-        die("Error al actualizar el proveedor: " . htmlentities($error['message'], ENT_QUOTES));
-    }
+// Ejecutar el procedimiento almacenado
+$success = oci_execute($stid);
 
-    oci_free_statement($stid);
-    oci_close($conn);
+if (!$success) {
+    $e = oci_error($stid);
+    echo "Error al actualizar el proveedor: " . $e['message'];
+}
+
+oci_free_statement($stid);
+oci_close($conn);
+
+// Redirigir según el resultado
+if ($success) {
+    header("Location: proovedores.php?mensaje=actualizado");
+    exit;
 } else {
-    die("Método de solicitud no válido.");
+    header("Location: proovedores.php?mensaje=error");
+    exit;
 }
+?>

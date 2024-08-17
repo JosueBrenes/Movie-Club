@@ -2,18 +2,21 @@
 include '../../includes/database.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $correo = isset($_POST['correo']) ? trim($_POST['correo']) : '';
+    $correo_electronico = isset($_POST['correo']) ? trim($_POST['correo']) : '';
     $contrasena = isset($_POST['contrasena']) ? trim($_POST['contrasena']) : '';
 
-    if (!empty($correo) && !empty($contrasena)) {
-        $sql = 'SELECT CONTRASENA FROM FIDE_EMPLEADOS_TB WHERE CORREO_ELECTRONICO = :correo';
+    if (!empty($correo_electronico) && !empty($contrasena)) {
+        $sql = 'BEGIN FIDE_EMPLEADOS_TB_LOGIN(:p_correo_electronico, :p_contrasena, :p_resultado, :p_id_empleado); END;';
         $stid = oci_parse($conn, $sql);
-        oci_bind_by_name($stid, ':correo', $correo);
+
+        oci_bind_by_name($stid, ':p_correo_electronico', $correo_electronico);
+        oci_bind_by_name($stid, ':p_contrasena', $contrasena);
+        oci_bind_by_name($stid, ':p_resultado', $resultado, 32, SQLT_INT);
+        oci_bind_by_name($stid, ':p_id_empleado', $id_empleado, 32, SQLT_INT);
 
         if (oci_execute($stid)) {
-            $row = oci_fetch_assoc($stid);
-            if ($row && password_verify($contrasena, $row['CONTRASENA'])) {
-                header('Location: ../admin/dashboard.php');
+            if ($resultado == 1) {
+                header('Location: ../admin/dashboard.php?id_empleado=' . $id_empleado);
                 exit;
             } else {
                 $error = 'Correo electrónico o contraseña incorrectos.';
@@ -37,10 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Inicio de sesión - Movie Club</title>
-  <link
-    rel="stylesheet"
-    href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-  />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
   <link rel="stylesheet" href="../../public/build/css/stylesLogin.css" />
   <link rel="stylesheet" href="../../public/build/css/styles.css" />
 </head>

@@ -2,6 +2,7 @@
 include '../../includes/database.php';
 
 function obtener_peliculas() {
+  
     global $conn;
 
     $sql = 'BEGIN FIDE_PELICULAS_TB_OBTENER_PELICULAS_SP(:p_cursor); END;';
@@ -39,19 +40,15 @@ function obtener_datos_adicionales() {
     oci_free_statement($stid_genero);
     oci_free_statement($cursor_genero);
 
-    // Obtener Director
-    $sql_director = 'BEGIN FIDE_DIRECTOR_TB_OBTENER_DIRECTOR_SP(:p_cursor); END;';
+    // Obtener Director con consulta directa
+    $sql_director = 'SELECT ID_DIRECTOR, NOMBRE FROM FIDE_DIRECTOR_TB';
     $stid_director = oci_parse($conn, $sql_director);
-    $cursor_director = oci_new_cursor($conn);
-    oci_bind_by_name($stid_director, ':p_cursor', $cursor_director, -1, OCI_B_CURSOR);
     oci_execute($stid_director);
-    oci_execute($cursor_director);
     $directores = [];
-    while ($row = oci_fetch_assoc($cursor_director)) {
+    while ($row = oci_fetch_assoc($stid_director)) {
         $directores[$row['ID_DIRECTOR']] = $row['NOMBRE'];
     }
     oci_free_statement($stid_director);
-    oci_free_statement($cursor_director);
 
     // Obtener Idiomas
     $sql_idiomas = 'BEGIN FIDE_IDIOMAS_TB_OBTENER_IDIOMAS_SP(:p_cursor); END;';
@@ -89,6 +86,7 @@ function obtener_datos_adicionales() {
     ];
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="es">

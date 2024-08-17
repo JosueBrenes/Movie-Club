@@ -5,22 +5,7 @@ if (!$conn) {
     die("Conexión fallida: " . htmlentities(oci_error()['message'], ENT_QUOTES));
 }
 
-// Preparar y ejecutar la llamada al procedimiento almacenado para obtener inventario
-$stid_inventario = oci_parse($conn, 'BEGIN FIDE_INVENTARIO_TB_OBTENER_INVENTARIO_SP(:p_cursor); END;');
-$cursor_inventario = oci_new_cursor($conn);
-oci_bind_by_name($stid_inventario, ':p_cursor', $cursor_inventario, -1, OCI_B_CURSOR);
-$success_inventario = oci_execute($stid_inventario);
-if (!$success_inventario) {
-    $e = oci_error($stid_inventario);
-    die("Error al ejecutar el procedimiento almacenado de inventario: " . $e['message']);
-}
-$success_inventario = oci_execute($cursor_inventario);
-if (!$success_inventario) {
-    $e = oci_error($cursor_inventario);
-    die("Error al ejecutar el cursor de inventario: " . $e['message']);
-}
-
-// Preparar y ejecutar la llamada al procedimiento almacenado para obtener proveedores
+// Obtener proveedores
 $stid_proveedores = oci_parse($conn, 'BEGIN FIDE_PROVEEDORES_TB_OBTENER_PROVEEDORES_SP(:p_cursor); END;');
 $cursor_proveedores = oci_new_cursor($conn);
 oci_bind_by_name($stid_proveedores, ':p_cursor', $cursor_proveedores, -1, OCI_B_CURSOR);
@@ -41,23 +26,42 @@ while ($row_proveedor = oci_fetch_assoc($cursor_proveedores)) {
     $proveedores_data[$row_proveedor['ID_PROVEEDOR']] = $row_proveedor['NOMBRE'];
 }
 
-// Preparar la llamada al procedimiento almacenado para obtener los estados
-$stid_estado = oci_parse($conn, 'BEGIN FIDE_ESTADO_TB_OBTENER_ESTADO_SP(:p_cursor); END;');
+oci_free_statement($stid_proveedores);
+oci_free_statement($cursor_proveedores);
 
-// Crear y asociar el cursor de salida para los estados
+// Obtener el proveedor seleccionado para filtrar
+$id_proveedor = isset($_POST['id_proveedor']) ? intval($_POST['id_proveedor']) : null;
+
+// Llamar a la función FILTRAR_PROVEEDOR para obtener el inventario filtrado
+$stid_inventario = oci_parse($conn, 'BEGIN :p_cursor := FIDE_INVENTARIO_TB_FILTRAR_PROVEEDOR_FN(:p_id_proveedor); END;');
+$cursor_inventario = oci_new_cursor($conn);
+oci_bind_by_name($stid_inventario, ':p_id_proveedor', $id_proveedor, -1, SQLT_INT);
+oci_bind_by_name($stid_inventario, ':p_cursor', $cursor_inventario, -1, OCI_B_CURSOR);
+
+$success_inventario = oci_execute($stid_inventario);
+if (!$success_inventario) {
+    $e = oci_error($stid_inventario);
+    die("Error al ejecutar la función FILTRAR_PROVEEDOR: " . $e['message']);
+}
+
+$success_inventario = oci_execute($cursor_inventario);
+if (!$success_inventario) {
+    $e = oci_error($cursor_inventario);
+    die("Error al ejecutar el cursor de inventario: " . $e['message']);
+}
+
+// Obtener estados
+$stid_estado = oci_parse($conn, 'BEGIN FIDE_ESTADO_TB_OBTENER_ESTADO_SP(:p_cursor); END;');
 $cursor_estado = oci_new_cursor($conn);
 oci_bind_by_name($stid_estado, ':p_cursor', $cursor_estado, -1, OCI_B_CURSOR);
-
-// Ejecutar el procedimiento almacenado para obtener los estados
-$success = oci_execute($stid_estado);
+$success_estado = oci_execute($stid_estado);
 oci_execute($cursor_estado);
 
-if (!$success) {
+if (!$success_estado) {
     $e = oci_error($stid_estado);
     die("Error al ejecutar el procedimiento almacenado para obtener estados: " . $e['message']);
 }
 
-// Crear un array para almacenar los estados
 $estados = [];
 while ($row_estado = oci_fetch_assoc($cursor_estado)) {
     $estados[$row_estado['ID_ESTADO']] = $row_estado['NOMBRE'];
@@ -65,8 +69,6 @@ while ($row_estado = oci_fetch_assoc($cursor_estado)) {
 
 oci_free_statement($stid_estado);
 oci_free_statement($cursor_estado);
-oci_free_statement($stid_proveedores);
-oci_free_statement($cursor_proveedores);
 ?>
 
 <!DOCTYPE html>
@@ -83,21 +85,37 @@ oci_free_statement($cursor_proveedores);
 <body>
     <!-- Sidebar -->
     <?php include '../../templates/sidebar.php'; ?>
-    
+
     <!-- Content -->
     <div class="content">
-        <!-- Header -->
         <header class="header_area">
             <a href="../dashboard.php" class="header_link">
                 <h1>Movie Club</h1>
             </a>
         </header>
-        
+
         <!-- Main Content -->
         <section class="options_area">
             <div class="container mt-5">
                 <h1 style="color: #333">Inventario</h1>
-                <a href="agregar_inventario.php" class="button" style="background-color: #013e6a; color: white;">Agregar Nuevo Inventario</a>
+
+                <!-- Formulario para seleccionar proveedor -->
+                <form method="POST" action="">
+                    <div class="form-group">
+                        <label for="id_proveedor">Filtrar por Proveedor:</label>
+                        <select id="id_proveedor" name="id_proveedor" class="form-control">
+                            <option value="">Todos</option>
+                            <?php foreach ($proveedores_data as $id => $nombre): ?>
+                                <option value="<?php echo htmlspecialchars($id, ENT_QUOTES); ?>" <?php echo ($id_proveedor == $id) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($nombre, ENT_QUOTES); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn button" style="font-weight: bold !important;">Filtrar</button>
+                    <a href="agregar_inventario.php" class="button" color: white;">Agregar Nuevo Inventario</a>
+                </form>
+
                 <table class="table table-striped mt-3">
                     <thead>
                         <tr>
@@ -129,7 +147,6 @@ oci_free_statement($cursor_proveedores);
             </div>
         </section>
 
-        <!-- Footer -->
         <footer class="footer_area">
             <p class="footer_text">
                 &copy; 2024 Movie Club. Todos los derechos reservados.
