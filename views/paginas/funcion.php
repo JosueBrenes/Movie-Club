@@ -35,13 +35,16 @@ function obtener_salas() {
     
     $salas = array();
     while (($row = oci_fetch_assoc($cursor)) != false) {
-        $salas[] = $row;
+        if ($row['ID_ESTADO'] == 1) { 
+            $salas[] = $row;
+        }
     }
     
     oci_free_statement($stid);
     oci_free_statement($cursor);
     return $salas;
 }
+
 
 function obtener_siguiente_valor_secuencia($sec_name) {
     global $conn;
